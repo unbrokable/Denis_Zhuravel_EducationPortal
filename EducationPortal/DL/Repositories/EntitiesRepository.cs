@@ -1,9 +1,8 @@
-﻿using System;
+﻿
 using System.Collections.Generic;
-using System.Text;
-using DL.Interfaces;
+using Application.Interfaces;
 using System.Linq;
-namespace DL.Repositories
+namespace Infrastructure.Repositories
 {
    public class EntitiesRepository : IEntitiesRepository
     {

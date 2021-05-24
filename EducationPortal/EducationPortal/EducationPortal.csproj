@@ -7,11 +7,12 @@
 
   <ItemGroup>
     <PackageReference Include="FluentValidation" Version="10.1.0" />
+    <PackageReference Include="Ninject" Version="3.3.4" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BL\BL.csproj" />
-    <ProjectReference Include="..\DL\DL.csproj" />
+    <ProjectReference Include="..\BL\Application.csproj" />
+    <ProjectReference Include="..\DL\Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

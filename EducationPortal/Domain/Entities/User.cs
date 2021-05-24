@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Text.Json;
-namespace DL
+namespace Domain
 {
-    [Serializable]
+   [Serializable]
    public class User
     {
         public int Id { get; set; }

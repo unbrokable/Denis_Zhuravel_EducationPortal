@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace DL.Interfaces
+namespace Application.Interfaces
 {
     public interface IHandler
     {

@@ -1,6 +1,6 @@
-﻿using BL.DTO;
-using BL.Interfaces;
-using BL.Services;
+﻿using Application.DTO;
+using Application.Interfaces;
+using Application.Services;
 using EducationPortal.Interfaces;
 using EducationPortal.Models;
 using EducationPortal.Models.Validators;

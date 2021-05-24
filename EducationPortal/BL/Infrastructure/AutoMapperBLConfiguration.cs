@@ -1,12 +1,9 @@
 ﻿using AutoMapper;
-using BL.DTO;
-using BL.Interfaces;
-using DL;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Application.DTO;
+using Application.Interfaces;
+using Domain;
 
-namespace BL
+namespace Application
 {
     public class AutoMapperBLConfiguration: IAutoMapperBLConfiguration
     {
@@ -16,6 +13,8 @@ namespace BL
             i =>
             {
                 i.CreateMap<User, UserDTO>();
+                i.CreateMap<UserDTO,User>();
+
             }).CreateMapper();
 
         }   

@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
-using BL.Interfaces;
-namespace BL
+using Application.Interfaces;
+namespace Application
 {
     public class Hasher:IHasher
     {

@@ -1,13 +1,11 @@
-﻿using DL.Interfaces;
+﻿using Application.Interfaces;
 using System;
 using System.IO;
-using  System.Text.Json;
-using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Linq;
 
-namespace DL
+namespace Infrastructure
 {
     public class BinaryHandler : IHandler
     {

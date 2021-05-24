@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace BL.Interfaces
+namespace Application.Interfaces
 {
     public interface IHasher
     {

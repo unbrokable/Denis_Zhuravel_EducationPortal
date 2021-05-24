@@ -1,7 +1,6 @@
 ﻿using System;
 using Ninject;
-using BL.Infrastructure;
-using BL.Interfaces;
+using Application.Interfaces;
 using EducationPortal.Infrastructure;
 using EducationPortal.Interfaces;
 
@@ -11,9 +10,8 @@ namespace EducationPortal
     {
         static void Main(string[] args)
         {
-            ServiceModuleBL blModule = new ServiceModuleBL(AppDomain.CurrentDomain.BaseDirectory);
-            ServiceModuleUl ulModule = new ServiceModuleUl();
-            var kernel = new StandardKernel(blModule, ulModule);
+            ServiceModuleUl ulModule = new ServiceModuleUl(AppDomain.CurrentDomain.BaseDirectory);
+            var kernel = new StandardKernel(ulModule);
             var UserService = (IServiceUser)kernel.Get(typeof(IServiceUser));
             IAuthorizationManager authorization = kernel.Get<IAuthorizationManager>();
             authorization.Enter(); 

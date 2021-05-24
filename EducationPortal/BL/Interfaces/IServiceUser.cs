@@ -1,9 +1,9 @@
-﻿using BL.DTO;
+﻿using Application.DTO;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace BL.Interfaces
+namespace Application.Interfaces
 {
     public interface IServiceUser : IService<UserDTO>
     {

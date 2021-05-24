@@ -1,16 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using BL.Interfaces;
-using BL.DTO;
-using DL;
-using DL.Repositories;
-using AutoMapper;
-using System.Text.RegularExpressions;
+using Application.Interfaces;
+using Application.DTO;
 using System.Linq;
-using DL.Interfaces;
+using Domain;
 
-namespace BL.Services
+namespace Application.Services
 {
     public class UserService : IServiceUser
     {
@@ -33,7 +28,6 @@ namespace BL.Services
 
         public IEnumerable<UserDTO> GetAll()
         {
-           
             return mapper.CreateMapper().Map<IEnumerable<User>, List<UserDTO>>(bd.GetAll<User>());
         }
 
