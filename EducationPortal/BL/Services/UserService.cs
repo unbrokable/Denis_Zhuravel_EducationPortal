@@ -3,53 +3,57 @@ using System.Collections.Generic;
 using System.Text;
 using BL.Interfaces;
 using BL.DTO;
-using BL.Validators;
 using DL;
 using DL.Repositories;
 using AutoMapper;
 using System.Text.RegularExpressions;
 using System.Linq;
+using DL.Interfaces;
 
 namespace BL.Services
 {
-    public class UserService : IService<UserDTO>
+    public class UserService : IServiceUser
     {
-        UserRepository bd;
+        IEntitiesRepository bd;
         IHasher hasher;
-        Validator validator = new Validator();
-        public UserService(UserRepository bd, IHasher hasher)
+        IAutoMapperBLConfiguration mapper;
+
+        public UserService(IEntitiesRepository bd, IHasher hasher, IAutoMapperBLConfiguration mapper)
         {
             this.bd = bd;
-            this.hasher = hasher ;
+            this.hasher = hasher;
+            this.mapper = mapper;
         }
         public void Create(UserDTO data)
         {
             data.Password = hasher.Hash(data.Password);
-            var user = new MapperConfiguration(i => i.CreateMap<UserDTO, User>()).CreateMapper().Map<UserDTO, User>(data);
+            var user = mapper.CreateMapper().Map<UserDTO, User>(data);
             bd.Create(user);
         }
 
         public IEnumerable<UserDTO> GetAll()
         {
-            var mapper = new MapperConfiguration(i => i.CreateMap<User, UserDTO>()).CreateMapper();
-            return mapper.Map<IEnumerable<User>, List<UserDTO>>(bd.GetAll());
+           
+            return mapper.CreateMapper().Map<IEnumerable<User>, List<UserDTO>>(bd.GetAll<User>());
         }
 
         public UserDTO GetById(int id)
         {
-            var user = bd.GetById(id);
-            return new MapperConfiguration(i => i.CreateMap<User, UserDTO>()).CreateMapper().Map<User,UserDTO >(user);
+            var user = bd.GetAll<User>().FirstOrDefault(i => i.Id == id);
+            return mapper.CreateMapper().Map<User,UserDTO >(user);
         }
 
-        public string Create(string name, string email, string password, string password2)
+        public bool Create(string name, string email, string password, string password2)
         {
-            String errors = validator.ValidateAccount(name,email,password,password2);
-            if (errors.Length == 0)
+            try
             {
-                Create(new UserDTO {Id = new Random().Next(0,100), Name = name, Email = email, Password = password});
-                return null;
+                Create(new UserDTO { Id = new Random().Next(1, 1000), Name = name, Email = email, Password = password });
             }
-            return errors.ToString();
+            catch (Exception)
+            {
+                return false;
+            }
+            return true;
         }
         public UserDTO Login(string password, string email)
         {

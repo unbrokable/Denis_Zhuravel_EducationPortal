@@ -1,16 +1,9 @@
 ﻿using System;
-using BL.Services;
-using EducationPortal.Controllers;
-using Ninject.Modules;
-using DL.Infrastructure;
 using Ninject;
-using DL.Repositories;
-using DL;
 using BL.Infrastructure;
-using System.Collections.Generic;
 using BL.Interfaces;
-using DL.Interfaces;
-using BL.DTO;
+using EducationPortal.Infrastructure;
+using EducationPortal.Interfaces;
 
 namespace EducationPortal
 {
@@ -18,14 +11,12 @@ namespace EducationPortal
     {
         static void Main(string[] args)
         {
-           
-            NinjectModule dlModule = new ServiceModuleDL("../../../../userstest.json");
-            ServiceModuleBL blModule = new ServiceModuleBL();  
-            var kernel = new StandardKernel(dlModule, blModule);
-            var UserService = (UserService)kernel.Get(typeof(IService<UserDTO>));
-            AuthorizationController authorization = new AuthorizationController(UserService);
-            authorization.Index();
-           
+            ServiceModuleBL blModule = new ServiceModuleBL(AppDomain.CurrentDomain.BaseDirectory);
+            ServiceModuleUl ulModule = new ServiceModuleUl();
+            var kernel = new StandardKernel(blModule, ulModule);
+            var UserService = (IServiceUser)kernel.Get(typeof(IServiceUser));
+            IAuthorizationManager authorization = kernel.Get<IAuthorizationManager>();
+            authorization.Enter(); 
         }
         
     }

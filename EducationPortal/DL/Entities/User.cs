@@ -2,6 +2,7 @@
 using System.Text.Json;
 namespace DL
 {
+    [Serializable]
    public class User
     {
         public int Id { get; set; }
