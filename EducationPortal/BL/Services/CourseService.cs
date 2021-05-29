@@ -11,9 +11,9 @@ namespace Application.Services
 {
     public class CourseService : IServiceEntities<CourseDTO>
     {
-        readonly IEntitiesRepository repository;
-        readonly IServiceEntities<MaterialDTO> serviceMaterial;
-        readonly IAutoMapperBLConfiguration mapper;
+        private readonly IEntitiesRepository repository;
+        private readonly IServiceEntities<MaterialDTO> serviceMaterial;
+        private readonly IAutoMapperBLConfiguration mapper;
        
         public CourseService(IEntitiesRepository repository, IServiceEntities<MaterialDTO> serviceMaterial, IAutoMapperBLConfiguration mapper)
         {
@@ -24,7 +24,7 @@ namespace Application.Services
 
         public void Create(CourseDTO data)
         {
-            var course = mapper.CreateMapper().Map<Course>(data);
+            var course = mapper.GetMapper().Map<Course>(data);
             foreach (var id in course.MaterialsId)
             {
                 repository.Create<CompositionCourseMaterial>(
@@ -37,36 +37,35 @@ namespace Application.Services
             repository.Create(course);
         }
             
-
         public IEnumerable<CourseDTO> GetAll()
         {
-            var courses = mapper.CreateMapper().Map<IEnumerable<CourseDTO>>(repository.GetAll<Course>());
+            var courses = mapper.GetMapper().Map<IEnumerable<CourseDTO>>(repository.GetAll<Course>());
             foreach (var course in courses)
             {
                 var materials = repository.GetAll<CompositionCourseMaterial>()
                     .Where(i => i.CourseId == course.Id).Select(i => i.MaterialId).ToList();
-                course.Materials = serviceMaterial.GetByAll(i => materials.Contains(i.Id)).ToList();
+                course.Materials = serviceMaterial.GetAllBy(i => materials.Contains(i.Id)).ToList();
             }
             return courses;
         }
 
         public CourseDTO GetBy(Predicate<CourseDTO> predicate)
         {
-            return mapper.CreateMapper()
+            return mapper.GetMapper()
                 .Map<IEnumerable<CourseDTO>>(repository.GetAll<Course>())
                 .FirstOrDefault(i => predicate(i));
         }
 
-        public IEnumerable<CourseDTO> GetByAll(Predicate<CourseDTO> predicate)
+        public IEnumerable<CourseDTO> GetAllBy(Predicate<CourseDTO> predicate)
         {
-            return mapper.CreateMapper()
+            return mapper.GetMapper()
                 .Map<IEnumerable<CourseDTO>>(repository.GetAll<Course>())
                 .Where(i => predicate(i));
         }
 
         public CourseDTO GetById(int id)
         {
-            return mapper.CreateMapper()
+            return mapper.GetMapper()
                 .Map<Course, CourseDTO>(repository.GetAll<Course>()
                 .FirstOrDefault(i => i.Id == id));
         }

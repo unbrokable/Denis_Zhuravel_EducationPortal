@@ -7,6 +7,6 @@ namespace Application.Interfaces
 {
     public interface IAutoMapperBLConfiguration
     {
-        IMapper CreateMapper();
+        IMapper GetMapper();
     }
 }

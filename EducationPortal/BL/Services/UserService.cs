@@ -10,9 +10,9 @@ namespace Application.Services
 {
     public class UserService : IServiceUser
     {
-        readonly IEntitiesRepository bd;
-        readonly IHasher hasher;
-        readonly IAutoMapperBLConfiguration mapper;
+        private readonly IEntitiesRepository bd;
+        private readonly IHasher hasher;
+        private readonly IAutoMapperBLConfiguration mapper;
 
         public UserService(IEntitiesRepository bd, IHasher hasher,IAutoMapperBLConfiguration mapper)
         {
@@ -20,23 +20,22 @@ namespace Application.Services
             this.hasher = hasher;
             this.mapper = mapper;
         }
+
         public void Create(UserDTO data)
         {
             data.Password = hasher.Hash(data.Password);
-            var user = new MapperConfiguration(i => i.CreateMap<UserDTO, User>()).CreateMapper().Map<UserDTO, User>(data);
-            bd.Create(user);
+            bd.Create(mapper.GetMapper().Map<UserDTO, User>(data));
         }
 
         public IEnumerable<UserDTO> GetAll()
         {
-            var mapper = new MapperConfiguration(i => i.CreateMap<User, UserDTO>()).CreateMapper();
-            return mapper.Map<IEnumerable<User>, List<UserDTO>>(bd.GetAll<User>());
+            return mapper.GetMapper().Map<IEnumerable<User>, List<UserDTO>>(bd.GetAll<User>());
         }
 
         public UserDTO GetById(int id)
         {
-            var user = bd.GetAll<User>().FirstOrDefault(i => i.Id == id);
-            return mapper.CreateMapper().Map<User, UserDTO>(user);
+            var user = bd.GetBy<User>(i => i.Id == id);
+            return mapper.GetMapper().Map<User, UserDTO>(user);
         }
 
         public bool Create(string name, string email, string password, string password2)
@@ -55,17 +54,18 @@ namespace Application.Services
         public UserDTO Login(string password, string email)
         {
             password = hasher.Hash(password);
-            return GetAll().ToList().FirstOrDefault(i => String.Equals(password, i.Password) && String.Equals(email, i.Email));
+            var user = bd.GetBy<User>(i => String.Equals(password, i.Password) && String.Equals(email, i.Email));
+            return mapper.GetMapper().Map<User, UserDTO>(user);
         }
 
         public UserDTO GetBy(Predicate<UserDTO> predicate)
         {
-            return GetAll().FirstOrDefault(i => predicate(i));
+            return bd.GetBy(predicate);
         }
 
-        public IEnumerable<UserDTO> GetByAll(Predicate<UserDTO> predicate)
+        public IEnumerable<UserDTO> GetAllBy(Predicate<UserDTO> predicate)
         {
-            return GetAll().Where(i => predicate(i));
+            return bd.GetAllBy(predicate);
         }
     }
 }

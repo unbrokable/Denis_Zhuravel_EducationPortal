@@ -11,11 +11,13 @@ namespace EducationPortal
 {
     class AuthorizationManager: IAuthorizationManager
     {
-        readonly IServiceUser service;
+        private readonly IServiceUser service;
+
         public AuthorizationManager(IServiceUser service)
         {
             this.service = service;
         }
+
         public UserViewModel Enter()
         {
             Console.WriteLine("Hi user");
@@ -48,6 +50,7 @@ namespace EducationPortal
             }
             
         }
+
         public bool CreateAccount()
         {
             Console.WriteLine("_____________________Create Account_____________________");
@@ -78,6 +81,7 @@ namespace EducationPortal
             Console.WriteLine("Created");
             return true;
         }
+
         public UserViewModel Login()
         {
             Console.WriteLine("_____________________Login_____________________");

@@ -13,8 +13,9 @@ namespace EducationPortal.Controllers
 {
     class CourseManager:ICourseManager
     {
-        readonly IServiceEntities<CourseDTO> service;
-        readonly IAutoMapperUlConfiguration mapper;
+        private readonly IServiceEntities<CourseDTO> service;
+        private readonly IAutoMapperUlConfiguration mapper;
+
         public CourseManager( IServiceEntities<CourseDTO> service, IAutoMapperUlConfiguration mapper )
         {       
             this.service = service;
@@ -56,7 +57,7 @@ namespace EducationPortal.Controllers
             var coursesview = new List<CourseViewModel>();
             foreach (var course in courses)
             {
-                coursesview.Add(mapper.CreateMapper().Map<CourseDTO, CourseViewModel>(course));
+                coursesview.Add(mapper.GetMapper().Map<CourseDTO, CourseViewModel>(course));
             }
             foreach (var item in coursesview)
             {

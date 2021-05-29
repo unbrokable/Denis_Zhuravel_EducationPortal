@@ -7,9 +7,10 @@ namespace EducationPortal.Controllers
 {
     class MainManager: IManager
     {
-        readonly ICourseManager courseController;
-        readonly IAuthorizationManager authorizationController;
-        readonly IMaterialManager materialManager;
+        private readonly ICourseManager courseController;
+        private readonly IAuthorizationManager authorizationController;
+        private readonly IMaterialManager materialManager;
+
         public MainManager(ICourseManager courseController, IAuthorizationManager authorizationController, IMaterialManager materialController )
         {
             this.materialManager = materialController;

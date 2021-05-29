@@ -8,9 +8,7 @@ namespace Application
 {
     public class AutoMapperBLConfiguration: IAutoMapperBLConfiguration
     {
-        public IMapper CreateMapper()
-        {
-            return new MapperConfiguration(
+        private IMapper mapper = new MapperConfiguration(
            i =>
            {
                i.CreateMap<MaterialDTO, Material>()
@@ -40,8 +38,13 @@ namespace Application
                i.CreateMap<Course, CourseDTO>();
 
                i.CreateMap<User, UserDTO>();
+               i.CreateMap<UserDTO, User>();
            }).CreateMapper();
 
+
+        public IMapper GetMapper()
+        {
+            return mapper;
         }
     }
 }

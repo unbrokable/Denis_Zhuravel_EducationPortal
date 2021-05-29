@@ -8,8 +8,8 @@ namespace Application.Services
 {
     public class MaterialService : IServiceEntities<MaterialDTO>
     {
-        readonly IEntitiesRepository repository;
-        readonly IAutoMapperBLConfiguration mapper;
+        private readonly IEntitiesRepository repository;
+        private readonly IAutoMapperBLConfiguration mapper;
             
         public MaterialService(IEntitiesRepository repository,IAutoMapperBLConfiguration mapper)
         {
@@ -19,7 +19,7 @@ namespace Application.Services
 
         public void Create(MaterialDTO data)
         {
-            var material = mapper.CreateMapper().Map<MaterialDTO,Material>(data);
+            var material = mapper.GetMapper().Map<MaterialDTO,Material>(data);
             if(material != null)
                 repository.Create<Material>(material);
         }
@@ -27,7 +27,7 @@ namespace Application.Services
         public IEnumerable<MaterialDTO> GetAll()
         {
             List<MaterialDTO> materialsDTO = mapper
-                .CreateMapper()
+                .GetMapper()
                 .Map< IEnumerable<Material>,IEnumerable<MaterialDTO>>(repository.GetAll<Material>())
                 .ToList();
             return materialsDTO;
@@ -43,9 +43,9 @@ namespace Application.Services
             return GetAll().FirstOrDefault(i => predicate(i));
         }
 
-        public IEnumerable<MaterialDTO> GetByAll(Predicate<MaterialDTO> predicate)
+        public IEnumerable<MaterialDTO> GetAllBy(Predicate<MaterialDTO> predicate)
         {
-             return mapper.CreateMapper().Map<IEnumerable<Material>,IEnumerable<MaterialDTO>>(repository.GetAll<Material>())
+             return mapper.GetMapper().Map<IEnumerable<Material>,IEnumerable<MaterialDTO>>(repository.GetAll<Material>())
                 .ToList().Where(i => predicate(i));
            
         }

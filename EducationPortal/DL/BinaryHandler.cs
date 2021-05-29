@@ -9,11 +9,13 @@ namespace Infrastructure
 {
     public class BinaryHandler : IHandler
     {
-        readonly string location;
+        private readonly string location;
+
         public BinaryHandler(string location)
         {
             this.location = location;
         }
+
         public IEnumerable<T> Load<T>() where T : class
         {
             IEnumerable<T> data;
@@ -32,6 +34,7 @@ namespace Infrastructure
             }
             return data;
         }
+
         public bool Save<T>(IEnumerable<T> data) where T : class
         {
             try

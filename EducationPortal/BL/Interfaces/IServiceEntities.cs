@@ -10,6 +10,6 @@ namespace Application.Interfaces
         IEnumerable<T> GetAll();
         T GetById(int id);
         T GetBy(Predicate<T> predicate);
-        IEnumerable<T> GetByAll(Predicate<T> predicate);
+        IEnumerable<T> GetAllBy(Predicate<T> predicate);
     }
 }

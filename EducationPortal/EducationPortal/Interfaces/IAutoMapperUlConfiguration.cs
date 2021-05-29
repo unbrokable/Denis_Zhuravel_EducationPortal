@@ -7,6 +7,6 @@ namespace EducationPortal.Interfaces
 {
     interface IAutoMapperUlConfiguration
     {
-        IMapper CreateMapper();
+        IMapper GetMapper();
     }
 }

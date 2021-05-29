@@ -12,9 +12,7 @@ namespace EducationPortal
 {
     class AutoMapperUlConfiguration : IAutoMapperUlConfiguration
     {
-        public IMapper CreateMapper()
-        {
-            return new MapperConfiguration(
+        private IMapper mapper = new MapperConfiguration(
             i =>
             {
                 i.CreateMap<MaterialDTO, MaterialViewModel>()
@@ -41,6 +39,11 @@ namespace EducationPortal
                 i.CreateMap<CourseDTO, CourseViewModel>();
                 i.CreateMap<CourseViewModel, CourseDTO>();
             }).CreateMapper();
+
+
+        public IMapper GetMapper()
+        {
+            return mapper;
         }
     }
 }
