@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Application.Interfaces
 {
-    public interface IServiceUser : IService<UserDTO>
+    public interface IServiceUser : IServiceEntities<UserDTO>
     {
         bool Create(string name, string email, string password, string password2);
         UserDTO Login(string password, string email);
