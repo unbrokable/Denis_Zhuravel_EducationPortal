@@ -10,5 +10,8 @@ namespace Application.DTO
         public string Name { get; set; }
         public string Email { get; set; }
         public string Password { get; set; }
+
+        public ICollection<CourseDTO> CreatedCourses { get; set; }
+        public ICollection<int> CreatedCoursesId { get; set; }
     }
 }
