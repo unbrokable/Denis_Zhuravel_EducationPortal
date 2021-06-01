@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace EducationPortal.Models
@@ -12,6 +13,7 @@ namespace EducationPortal.Models
 
         public ICollection<MaterialViewModel> MaterialsPassed { get; set; }
         public ICollection<MaterialViewModel> MaterialsNotPassed { get; set; }
+        public ICollection<SkillViewModel> Skills { get; set; }
 
         public override string ToString()
         {
@@ -22,11 +24,24 @@ namespace EducationPortal.Models
             {
                 @string.Append(String.Concat(item.ToString(), '\n'));
             }
-            @string.AppendLine("Dont passed material");
-            foreach (var item in MaterialsNotPassed)
+            if (MaterialsNotPassed.Any())
             {
-                @string.Append(item.Id).Append(" ");
+                @string.AppendLine("Dont passed material");
+                foreach (var item in MaterialsNotPassed)
+                {
+                    @string.Append(item.Id).Append(" ");
+                }
+
             }
+            else
+            {
+                @string.AppendLine("You passed this course and get some skills");
+                foreach (var skill in Skills)
+                {
+                    @string.AppendLine(skill.ToString());
+                }
+            }
+            
             return @string.ToString();
         }
     }

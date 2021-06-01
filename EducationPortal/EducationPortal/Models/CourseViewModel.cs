@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace EducationPortal.Models
@@ -11,6 +12,7 @@ namespace EducationPortal.Models
         public string Description { get; set; }
 
         public ICollection<MaterialViewModel> Materials { get; set; }
+        public ICollection<SkillViewModel> Skills { get; set; }
 
 
         public override string ToString()
@@ -25,7 +27,8 @@ namespace EducationPortal.Models
             {
                 @string.Append(item.ToString()).Append("\n");
             }
-
+            @string.AppendLine($"--------Skills---------")
+                .AppendLine(String.Join("\n", Skills.Select(i => i.ToString())));
             return @string.ToString();
         }
     }

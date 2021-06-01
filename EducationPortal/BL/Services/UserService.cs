@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using Application.Interfaces;
 using Application.DTO;
-using AutoMapper;
-using System.Linq;
 using Domain;
+using Application.Interfaces.IServices;
+using System.Linq;
 
 namespace Application.Services
 {
@@ -13,12 +13,14 @@ namespace Application.Services
         private readonly IEntitiesRepository bd;
         private readonly IHasher hasher;
         private readonly IAutoMapperBLConfiguration mapper;
+        private readonly IServiceSkill serviceSkill;
 
-        public UserService(IEntitiesRepository bd, IHasher hasher,IAutoMapperBLConfiguration mapper)
+        public UserService(IEntitiesRepository bd, IHasher hasher,IAutoMapperBLConfiguration mapper, IServiceSkill serviceSkill)
         {
             this.bd = bd;
             this.hasher = hasher;
             this.mapper = mapper;
+            this.serviceSkill = serviceSkill;
         }
 
         public void Create(UserDTO data)
@@ -32,16 +34,19 @@ namespace Application.Services
             return mapper.GetMapper().Map<IEnumerable<User>, List<UserDTO>>(bd.GetAll<User>());
         }
 
-        public UserDTO GetById(int id)
+        public UserDTO GetById(int id) 
         {
-            var user = bd.GetBy<User>(i => i.Id == id);
-            return mapper.GetMapper().Map<User, UserDTO>(user);
+            return GetUser(i => i.Id == id); 
         }
 
         public bool Create(string name, string email, string password, string password2)
         {
             try
             {
+                if (ExistNameEmail(name,email))
+                {
+                    throw new Exception();
+                }
                 Create(new UserDTO { Id = new Random().Next(1, 1000), Name = name, Email = email, Password = password });
             }
             catch (Exception)
@@ -54,18 +59,33 @@ namespace Application.Services
         public UserDTO Login(string password, string email)
         {
             password = hasher.Hash(password);
-            var user = bd.GetBy<User>(i => String.Equals(password, i.Password) && String.Equals(email, i.Email));
-            return mapper.GetMapper().Map<User, UserDTO>(user);
+            return GetUser(i => i.Password == password && i.Email == email);
         }
 
         public UserDTO GetBy(Predicate<UserDTO> predicate)
         {
-            return bd.GetBy(predicate);
+            return GetUser(predicate);
         }
 
         public IEnumerable<UserDTO> GetAllBy(Predicate<UserDTO> predicate)
         {
-            return bd.GetAllBy(predicate);
+            return mapper.GetMapper().Map<IEnumerable<User>,IEnumerable<UserDTO>>(bd.GetAllBy<User>(i => predicate(mapper.GetMapper().Map<User, UserDTO>(i))));
+        }
+
+        public bool ExistNameEmail(string name, string email)
+        {
+            return bd.GetBy<User>(i => String.Compare(i.Email, email) == 0 || String.Compare(i.Name, name) == 0) != null; 
+        }
+
+        UserDTO GetUser(Predicate<UserDTO> predicate)
+        {
+            var user = mapper.GetMapper().Map < User,UserDTO>(bd.GetBy<User>(i => predicate(mapper.GetMapper().Map<User, UserDTO>(i))));
+            if (user == null)
+            {
+                return null;
+            }
+            user.Skills = serviceSkill.GetAllSkillsOfUser(user.Id)?.ToList()??new List<SkillUserDTO>();
+            return user;
         }
     }
 }

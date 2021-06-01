@@ -5,6 +5,7 @@ using EducationPortal.Interfaces;
 using EducationPortal.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace EducationPortal.Managers
@@ -24,7 +25,7 @@ namespace EducationPortal.Managers
 
         public void ChooseCourse(int idUser)
         {
-            courseManager.ShowCourses();
+            courseManager.ShowCourses(idUser);
             Console.WriteLine("Choose id course");
             string answer = Console.ReadLine();
             try
@@ -46,7 +47,18 @@ namespace EducationPortal.Managers
                 .Map<IEnumerable<CourseProgressDTO>,IEnumerable<CourseProgressViewModel> >(passingService.GetProgressCourses(idUser));
             foreach (var course  in courses)
             {
-                Console.WriteLine(course.ToString());
+                if(course.MaterialsNotPassed.Any())
+                {
+                    Console.WriteLine(course.ToString());
+                }
+                else
+                {
+                    var color = Console.ForegroundColor;
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine(course.ToString());
+                    Console.ForegroundColor = color;
+                }
+                
             }
             Console.WriteLine("Enter id  of course");
             string answer = Console.ReadLine();

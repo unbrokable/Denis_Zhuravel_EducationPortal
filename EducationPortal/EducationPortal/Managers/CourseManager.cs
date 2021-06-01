@@ -8,16 +8,19 @@ using System;
 using AutoMapper;
 using EducationPortal.Interfaces;
 using EducationPortal.Models.Validators;
+using Application.Interfaces.IServices;
 
 namespace EducationPortal.Controllers
 {
     class CourseManager:ICourseManager
     {
-        private readonly IServiceEntities<CourseDTO> service;
+        private readonly IServiceCourse service;
         private readonly IAutoMapperUlConfiguration mapper;
+        private readonly ISkillManager skillManager;
 
-        public CourseManager( IServiceEntities<CourseDTO> service, IAutoMapperUlConfiguration mapper )
-        {       
+        public CourseManager(IServiceCourse service, IAutoMapperUlConfiguration mapper, ISkillManager skillManager)
+        {
+            this.skillManager = skillManager;
             this.service = service;
             this.mapper = mapper; 
         }
@@ -31,11 +34,14 @@ namespace EducationPortal.Controllers
             string description = Console.ReadLine();
             Console.WriteLine("Write id of material (1,2,3,4)");
             string materials = Console.ReadLine();
+            Console.WriteLine("Write id of skills (1,2,3,4)");
+            string skills = Console.ReadLine();
             CourseDTO course = new CourseDTO()
             {
                 Name = name,
                 Description = description,
                 MaterialsId = materials.Split(',').Select(i => int.Parse(i)).ToList(),
+                SkillsId = skills.Split(',').Select(i => int.Parse(i)).ToList(),
                 Id = new Random().Next(0,1000),
                 UserId = userId
             };
@@ -47,8 +53,15 @@ namespace EducationPortal.Controllers
                 Console.WriteLine(validateResult.ToString(","));
                 return;
             }
-
-            service.Create(course);
+            try
+            {
+                service.Create(course);
+            }
+            catch (ArgumentException)
+            {
+                Console.WriteLine("Course must contain at least one skill and one material");
+            }
+            
         }
 
         public void ShowCreatedCourseByUser(int userId)
@@ -65,9 +78,9 @@ namespace EducationPortal.Controllers
             }
         }
 
-        public void ShowCourses()
+        public void ShowCourses(int idUser)
         {
-            var courses = service.GetAll();
+            var courses = service.GetAllExceptChoosen(idUser);
             var coursesview = new List<CourseViewModel>();
             foreach (var course in courses)
             {
@@ -75,8 +88,18 @@ namespace EducationPortal.Controllers
             }
             foreach (var item in coursesview)
             {
-                Console.WriteLine(item.ToString());
+                Console.WriteLine($"Course id {item.Id} Name {item.Name}\nDescription {item.Description}\n");
             }
+        }
+
+        public void ShowSkills()
+        {
+            skillManager.Show();
+        }
+
+        public void CreateSkill()
+        {
+            skillManager.Create();
         }
 
     }

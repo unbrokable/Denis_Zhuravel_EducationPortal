@@ -4,16 +4,15 @@ using System.Text;
 
 namespace EducationPortal.Models
 {
-    abstract class MaterialViewModel
+    class SkillUserViewModel
     {
         public int Id { get; set; }
         public string Name { get; set; }
-        public string Location { get; set; }
-        public int CreatorId { get; set; }
-
+        public int Level { get; set; }
+        
         public override string ToString()
         {
-            return $" ID {Id}\n Name {Name}\n Location {Location}";
+            return $"Skill: Id {Id} Name {Name} Level {Level}";
         }
     }
 }

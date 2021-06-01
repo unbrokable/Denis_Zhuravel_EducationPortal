@@ -13,5 +13,7 @@ namespace Application.DTO
 
         public ICollection<MaterialDTO> MaterialsPassed { get; set; }
         public ICollection<MaterialDTO> MaterialsNotPassed { get; set; }
+
+        public ICollection<SkillDTO> Skills { get; set; }
     }
 }

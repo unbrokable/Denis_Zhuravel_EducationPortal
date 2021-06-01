@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Domain
 {
@@ -13,5 +12,7 @@ namespace Domain
         public int UserId { get; set;}
 
         public ICollection<int> MaterialsId { get; set; }
+        public ICollection<int> SkillsId { get; set; }
+
     }
 }
