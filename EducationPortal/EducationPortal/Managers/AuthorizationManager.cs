@@ -77,9 +77,14 @@ namespace EducationPortal
                 return false;
             }
 
-            service.Create(name, email, password, password2);
-            Console.WriteLine("Created");
-            return true;
+            if(service.Create(name, email, password, password2))
+            {
+                Console.WriteLine("Created");
+                return true;
+            }
+            Console.WriteLine("Email or Login Invalid");
+            return false;
+            
         }
 
         public UserViewModel Login()
@@ -97,10 +102,26 @@ namespace EducationPortal
                 return null;
             }
             var mapper = new MapperConfiguration(i => {
+                i.CreateMap<SkillUserDTO, SkillUserViewModel>();
                 i.CreateMap<UserDTO, UserViewModel>();
-                i.CreateMap<UserViewModel,UserDTO>();
             });
             return mapper.CreateMapper().Map<UserDTO, UserViewModel>(curUser);
+        }
+
+        public UserViewModel GetUser(int id)
+        {
+            var curUser = service.GetById(id);
+
+            if (curUser == null)
+            {
+                return null;
+            }
+            var mapper = new MapperConfiguration(i => {
+                i.CreateMap<SkillUserDTO, SkillUserViewModel>();
+                i.CreateMap<UserDTO, UserViewModel>();
+            });
+            return mapper.CreateMapper().Map<UserDTO, UserViewModel>(curUser);
+
         }
     }
 }

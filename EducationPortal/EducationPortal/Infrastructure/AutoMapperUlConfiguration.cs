@@ -42,6 +42,10 @@ namespace EducationPortal
                 i.CreateMap<CourseProgressDTO, CourseProgressViewModel>();
                 i.CreateMap<CourseProgressViewModel, CourseProgressDTO>();
 
+                i.CreateMap<SkillDTO, SkillViewModel>();
+                i.CreateMap<SkillViewModel, SkillDTO>();
+                
+
             }).CreateMapper();
 
 

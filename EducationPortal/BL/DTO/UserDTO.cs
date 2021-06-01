@@ -13,5 +13,6 @@ namespace Application.DTO
 
         public ICollection<CourseDTO> CreatedCourses { get; set; }
         public ICollection<int> CreatedCoursesId { get; set; }
+        public ICollection<SkillUserDTO> Skills { get; set; }
     }
 }

@@ -37,7 +37,7 @@ namespace Infrastructure.Repositories
         public IEnumerable<T> GetAllBy<T>(Predicate<T> predicate) where T : class
         {
             var arr = GetAll<T>();
-            return arr.Where(i => predicate(i))??null;
+            return arr?.Where(i => predicate(i))??null;
         }
 
         public bool Update<T>(T data, Predicate<T> predicate) where T : class

@@ -6,8 +6,10 @@ namespace EducationPortal.Interfaces
 {
     interface ICourseManager
     {
-        void ShowCourses();
+        void ShowCourses(int userId);
         void ShowCreatedCourseByUser(int userId);
         void CreateCourse(int userId);
+        void ShowSkills();
+        void CreateSkill();
     }
 }

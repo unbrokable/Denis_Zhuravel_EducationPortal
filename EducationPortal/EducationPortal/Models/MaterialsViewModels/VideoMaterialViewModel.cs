@@ -12,9 +12,9 @@ namespace EducationPortal.Models.MaterialsViewModels
         public override string ToString()
         {
             StringBuilder @string = new StringBuilder();
-            @string.Append("Video material: ")
-                .Append(base.ToString())
-                .Append($"Length {Length} Resolution {Resolution}\n");
+            @string.AppendLine("Video material: ")
+                .AppendLine(base.ToString())
+                .AppendLine($" Length {Length}\n Resolution {Resolution}\n");
             return @string.ToString();
         }
     }

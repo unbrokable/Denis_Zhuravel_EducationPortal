@@ -9,5 +9,6 @@ namespace EducationPortal.Interfaces
     {
         UserViewModel Enter();
         bool CreateAccount();
+        UserViewModel GetUser(int id);
     }
 }

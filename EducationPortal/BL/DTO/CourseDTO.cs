@@ -15,5 +15,8 @@ namespace Application.DTO
         public ICollection<MaterialDTO> Materials { get; set; }
         public ICollection<int> MaterialsId { get; set; }
 
+        public ICollection<SkillDTO> Skills { get; set; }
+        public ICollection<int> SkillsId { get; set; }
+
     }
 }

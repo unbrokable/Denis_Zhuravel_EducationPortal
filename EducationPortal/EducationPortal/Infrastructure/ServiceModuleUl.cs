@@ -11,6 +11,7 @@ using Application.DTO;
 using EducationPortal.Models;
 using EducationPortal.Managers.Commands;
 using EducationPortal.Managers;
+using Application.Interfaces.IServices;
 
 namespace EducationPortal.Infrastructure
 {
@@ -29,6 +30,7 @@ namespace EducationPortal.Infrastructure
             Bind<IManager>().To<MainManager>();
             Bind<IMaterialManager>().To<MaterialManager>();
             Bind<IPassCourseManager>().To<PassCourseManager>();
+            Bind<ISkillManager>().To<SkillManager>();
 
             Bind<IHasher>().To<Hasher>();
             Bind<IServiceUser>().To<UserService>();
@@ -37,6 +39,8 @@ namespace EducationPortal.Infrastructure
             Bind<ICoursePassingService>().To<CoursePassingService>();
             Bind<IEntitiesRepository>().To<EntitiesRepository>();
             Bind<IHandler>().To<BinaryHandler>().WithConstructorArgument(location);
+            Bind<IServiceSkill>().To<SkillService>();
+            Bind<IServiceCourse>().To<CourseService>();
 
             //mappers
             Bind<IAutoMapperUlConfiguration>().To<AutoMapperUlConfiguration>();

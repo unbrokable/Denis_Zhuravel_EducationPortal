@@ -14,10 +14,10 @@ namespace EducationPortal.Models.MaterialsViewModels
         public override string ToString()
         {
             StringBuilder @string = new StringBuilder();
-            @string.Append("Book material: ")
-                .Append(base.ToString())
-                .Append($"Author {Author} Amount of Pages {AmountOfPages} Format {Format}")
-                .Append($" Date of Published {DateOfPublished.ToShortDateString()}\n");
+            @string.AppendLine("Book material: ")
+                .AppendLine(base.ToString())
+                .AppendLine($" Author {Author}\n Amount of Pages {AmountOfPages}\n Format {Format}")
+                .AppendLine ($" Date of Published {DateOfPublished.ToShortDateString()}");
             return @string.ToString();
         }
     }

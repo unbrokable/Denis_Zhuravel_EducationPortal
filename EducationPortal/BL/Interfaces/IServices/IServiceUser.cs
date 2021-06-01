@@ -1,7 +1,4 @@
 ﻿using Application.DTO;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Application.Interfaces
 {
@@ -9,5 +6,6 @@ namespace Application.Interfaces
     {
         bool Create(string name, string email, string password, string password2);
         UserDTO Login(string password, string email);
+        public bool ExistNameEmail(string name, string email);
     }
 }

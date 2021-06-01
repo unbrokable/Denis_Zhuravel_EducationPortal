@@ -3,6 +3,8 @@ using Application.DTO;
 using Application.Interfaces;
 using Domain;
 using Application.DTO.MaterialDTOs;
+using Domain.Entities;
+using System;
 
 namespace Application
 {
@@ -39,6 +41,12 @@ namespace Application
 
                i.CreateMap<User, UserDTO>();
                i.CreateMap<UserDTO, User>();
+
+               i.CreateMap<SkillDTO, Skill>();
+               i.CreateMap<Skill, SkillDTO>();
+
+               i.CreateMap<Predicate<SkillDTO>, Predicate<Skill>>();
+               i.CreateMap<Predicate<Skill>, Predicate<SkillDTO>>();
            }).CreateMapper();
 
 

@@ -9,6 +9,7 @@ using Domain.Entities;
 using System.Linq;
 using Application.DTO;
 using Application.DTO.MaterialDTOs;
+using Application.Interfaces.IServices;
 
 namespace UnitTests
 {
@@ -17,14 +18,14 @@ namespace UnitTests
     {
         Mock<IEntitiesRepository> repository;
         Mock<IServiceUser> serviceUser;
-        Mock<IServiceEntities<CourseDTO>> serviceCourse;
+        Mock<IServiceCourse> serviceCourse;
         Mock<IServiceEntities<MaterialDTO>> serviceMaterial;
 
         [TestInitialize]
         public void SetupInterfaces()
         {
             repository = new Mock<IEntitiesRepository>();
-            serviceCourse = new Mock<IServiceEntities<CourseDTO>>();
+            serviceCourse = new Mock<IServiceCourse>();
             serviceMaterial = new Mock<IServiceEntities<MaterialDTO>>();
             serviceUser = new Mock<IServiceUser>();
         } 
@@ -32,7 +33,7 @@ namespace UnitTests
         [TestMethod]
         public void ChooseCourse_InvalidUserId_ReturnFalse()
         {
-            serviceCourse = new Mock<IServiceEntities<CourseDTO>>();
+            serviceCourse = new Mock<IServiceCourse>();
             repository = new Mock<IEntitiesRepository>();
             serviceUser = new Mock<IServiceUser>();
 
@@ -51,7 +52,7 @@ namespace UnitTests
         [TestMethod]
         public void ChooseCourse_InvalidCourseId_ReturnFalse()
         {
-            serviceCourse = new Mock<IServiceEntities<CourseDTO>>();
+            serviceCourse = new Mock<IServiceCourse>();
             repository = new Mock<IEntitiesRepository>();
             serviceUser = new Mock<IServiceUser>();
 
@@ -70,7 +71,7 @@ namespace UnitTests
         [TestMethod]
         public void ChooseCourse_RightCourseIdAndUserId_ReturnTrue()
         {
-            serviceCourse = new Mock<IServiceEntities<CourseDTO>>();
+            serviceCourse = new Mock<IServiceCourse>();
             repository = new Mock<IEntitiesRepository>();
             serviceUser = new Mock<IServiceUser>();
 
@@ -90,7 +91,7 @@ namespace UnitTests
         [TestMethod]
         public void GetProgressCourse_InvalidCourseIdAndUserId_ReturnsNull()
         {
-            serviceCourse = new Mock<IServiceEntities<CourseDTO>>();
+            serviceCourse = new Mock<IServiceCourse>();
             repository = new Mock<IEntitiesRepository>();
             serviceUser = new Mock<IServiceUser>();
 
@@ -109,7 +110,7 @@ namespace UnitTests
         [TestMethod]
         public void GetProgressCourse_RightCourseIdAndUserIdButUserDontTakeCourse_ReturnsNull()
         {
-            serviceCourse = new Mock<IServiceEntities<CourseDTO>>();
+            serviceCourse = new Mock<IServiceCourse>();
             repository = new Mock<IEntitiesRepository>();
             serviceUser = new Mock<IServiceUser>();
 
@@ -128,7 +129,7 @@ namespace UnitTests
         [TestMethod]
         public void GetProgressCourse_RightCourseIdAndUserId_ReturnsCourseProgressDTO()
         {
-            serviceCourse = new Mock<IServiceEntities<CourseDTO>>();
+            serviceCourse = new Mock<IServiceCourse>();
             repository = new Mock<IEntitiesRepository>();
             serviceUser = new Mock<IServiceUser>();
 
@@ -176,7 +177,7 @@ namespace UnitTests
         [TestMethod]
         public void GetProgressCourses_UserDontHaveAny_ReturnsEmptyArrayOfCourseProgressDTO()
         {
-            serviceCourse = new Mock<IServiceEntities<CourseDTO>>();
+            serviceCourse = new Mock<IServiceCourse>();
             repository = new Mock<IEntitiesRepository>();
             serviceUser = new Mock<IServiceUser>();
 
@@ -197,7 +198,7 @@ namespace UnitTests
         [TestMethod]
         public void GetProgressCourses_UserHaveTwoPassingCourses_ReturnsArrayOfCourseProgressDTOCountTwo()
         {
-            serviceCourse = new Mock<IServiceEntities<CourseDTO>>();
+            serviceCourse = new Mock<IServiceCourse>();
             repository = new Mock<IEntitiesRepository>();
             serviceUser = new Mock<IServiceUser>();
 
@@ -225,7 +226,7 @@ namespace UnitTests
         [TestMethod]
         public void PassMaterial_UserPassedMaterialBefore_ReturnsMaterialWithId5()
         {
-            serviceCourse = new Mock<IServiceEntities<CourseDTO>>();
+            serviceCourse = new Mock<IServiceCourse>();
             repository = new Mock<IEntitiesRepository>();
             serviceMaterial = new Mock<IServiceEntities<MaterialDTO>>();
 
@@ -249,12 +250,12 @@ namespace UnitTests
         [TestMethod]
         public void PassMaterial_UserPassedDidntMaterialId5Before_ReturnsMaterial()
         {
-            serviceCourse = new Mock<IServiceEntities<CourseDTO>>();
+            serviceCourse = new Mock<IServiceCourse>();
             repository = new Mock<IEntitiesRepository>();
             serviceMaterial = new Mock<IServiceEntities<MaterialDTO>>();
 
             serviceCourse.Setup(i => i.GetById(It.IsAny<int>()))
-                .Returns(new CourseDTO() { Materials = new List<MaterialDTO>(), MaterialsId = new List<int>() { 5} });
+                .Returns(new CourseDTO() { Materials = new List<MaterialDTO>(), MaterialsId = new List<int>() { 5}, Skills = new List<SkillDTO>()});
 
             repository.Setup(i => i.GetBy<CompositionPassedMaterial>(It.IsAny<Predicate<CompositionPassedMaterial>>()))
                 .Returns(new CompositionPassedMaterial() { CourseId = 1, MaterialsId = new List<int>() {  } });
