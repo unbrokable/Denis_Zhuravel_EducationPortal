@@ -5,10 +5,9 @@ using System.Text;
 
 namespace EducationPortal.Interfaces
 {
-    interface IAuthorizationManager
+    interface IMaterialManager
     {
-        UserViewModel Enter();
-        bool CreateAccount();
-        UserViewModel GetUser(int id);
+        void CreateMaterial(int userId);
+        IEnumerable<MaterialViewModel> ShowAvaibleMaterial(int userId);
     }
 }

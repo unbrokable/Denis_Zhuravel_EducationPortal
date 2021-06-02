@@ -3,6 +3,7 @@ using Ninject;
 using Application.Interfaces;
 using EducationPortal.Infrastructure;
 using EducationPortal.Interfaces;
+using Ninject.Modules;
 
 namespace EducationPortal
 {
@@ -10,11 +11,10 @@ namespace EducationPortal
     {
         static void Main(string[] args)
         {
-            ServiceModuleUl ulModule = new ServiceModuleUl(AppDomain.CurrentDomain.BaseDirectory);
+            NinjectModule ulModule = new ServiceModuleUl(AppDomain.CurrentDomain.BaseDirectory);
             var kernel = new StandardKernel(ulModule);
-            var UserService = (IServiceUser)kernel.Get(typeof(IServiceUser));
-            IAuthorizationManager authorization = kernel.Get<IAuthorizationManager>();
-            authorization.Enter(); 
+            var mainManager = kernel.Get<IManager>();
+            mainManager.Start();
         }
         
     }

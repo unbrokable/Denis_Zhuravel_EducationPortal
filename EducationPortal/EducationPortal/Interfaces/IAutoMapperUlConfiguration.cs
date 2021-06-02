@@ -3,9 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Application.Interfaces
+namespace EducationPortal.Interfaces
 {
-    public interface IAutoMapperBLConfiguration
+    interface IAutoMapperUlConfiguration
     {
         IMapper GetMapper();
     }

@@ -5,10 +5,8 @@ using System.Text;
 
 namespace EducationPortal.Interfaces
 {
-    interface IAuthorizationManager
+    interface IManager
     {
-        UserViewModel Enter();
-        bool CreateAccount();
-        UserViewModel GetUser(int id);
+        void Start();
     }
 }

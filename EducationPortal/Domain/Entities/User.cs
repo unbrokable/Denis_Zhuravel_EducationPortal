@@ -1,5 +1,6 @@
 ﻿using System;
-using System.Text.Json;
+using System.Collections.Generic;
+
 namespace Domain
 {
    [Serializable]
@@ -9,5 +10,7 @@ namespace Domain
         public string Name { get; set; }
         public string Email { get; set; }
         public string Password { get; set; }
+
+        public ICollection<int> CreatedCoursesId { get; set; }
     }
 }
