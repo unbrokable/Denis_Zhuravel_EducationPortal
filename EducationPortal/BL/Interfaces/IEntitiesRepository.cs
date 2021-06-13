@@ -1,14 +1,17 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore.Query;
+using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
+using System.Linq.Expressions;
 
 namespace Application.Interfaces
 {
-   public  interface IEntitiesRepository
+    public  interface IEntitiesRepository
     {
-        IEnumerable<T> GetAll<T>() where T : class;
         bool Create<T>(T data) where T : class;
-        bool Update<T>(IEnumerable<T> data) where T : class;
+        bool Update<T>(T data) where T : class;
+        IEnumerable<T> GetAllBy<T>(Func<T,bool> predicate, Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null) where T : class;
+        T GetBy<T>(Func<T, bool> predicate, Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null) where T : class;
     }
 }
 

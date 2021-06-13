@@ -2,46 +2,47 @@
 using System.Collections.Generic;
 using Application.Interfaces;
 using Application.DTO;
-using System.Linq;
 using Domain;
+using Application.Interfaces.IServices;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.Services
 {
     public class UserService : IServiceUser
     {
-        IEntitiesRepository bd;
-        IHasher hasher;
-        IAutoMapperBLConfiguration mapper;
+        private readonly IEntitiesRepository bd;
+        private readonly IHasher hasher;
+        private readonly IAutoMapperBLConfiguration mapper;
 
-        public UserService(IEntitiesRepository bd, IHasher hasher, IAutoMapperBLConfiguration mapper)
+        public UserService(IEntitiesRepository bd, IHasher hasher,IAutoMapperBLConfiguration mapper)
         {
             this.bd = bd;
             this.hasher = hasher;
             this.mapper = mapper;
         }
+
         public void Create(UserDTO data)
         {
             data.Password = hasher.Hash(data.Password);
-            var user = mapper.CreateMapper().Map<UserDTO, User>(data);
-            bd.Create(user);
+            bd.Create(mapper.GetMapper().Map<UserDTO, User>(data));
         }
 
-        public IEnumerable<UserDTO> GetAll()
-        {
-            return mapper.CreateMapper().Map<IEnumerable<User>, List<UserDTO>>(bd.GetAll<User>());
-        }
 
-        public UserDTO GetById(int id)
+        public UserDTO GetById(int id) 
         {
-            var user = bd.GetAll<User>().FirstOrDefault(i => i.Id == id);
-            return mapper.CreateMapper().Map<User,UserDTO >(user);
+            return GetUser(i => i.Id == id); 
         }
 
         public bool Create(string name, string email, string password, string password2)
         {
             try
             {
-                Create(new UserDTO { Id = new Random().Next(1, 1000), Name = name, Email = email, Password = password });
+                if (ExistNameEmail(name,email))
+                {
+                    throw new Exception();
+                }
+                Create(new UserDTO { Name = name, Email = email, Password = password });
             }
             catch (Exception)
             {
@@ -49,10 +50,31 @@ namespace Application.Services
             }
             return true;
         }
+
         public UserDTO Login(string password, string email)
         {
             password = hasher.Hash(password);
-            return GetAll().ToList().FirstOrDefault(i=> String.Equals(password, i.Password)  && String.Equals(email, i.Email));
+            return GetUser(i => i.Password == password && i.Email == email);
+        }
+
+        public UserDTO GetBy(Predicate<UserDTO> predicate)
+        {
+            return GetUser(predicate);
+        }
+
+        public IEnumerable<UserDTO> GetAllBy(Predicate<UserDTO> predicate)
+        {
+            return mapper.GetMapper().Map<IEnumerable<User>,IEnumerable<UserDTO>>(bd.GetAllBy<User>(i => predicate(mapper.GetMapper().Map<User, UserDTO>(i))));
+        }
+
+        public bool ExistNameEmail(string name, string email)
+        {
+            return bd.GetBy<User>(i => String.Compare(i.Email, email) == 0 || String.Compare(i.Name, name) == 0) != null; 
+        }
+
+        UserDTO GetUser(Predicate<UserDTO> predicate)
+        {
+            return mapper.GetMapper().Map < User,UserDTO>(bd.GetBy<User>(i => predicate(mapper.GetMapper().Map<User, UserDTO>(i)), i => i.Include(i => i.Skills).ThenInclude(i => i.Skill))); 
         }
     }
 }

@@ -7,7 +7,8 @@ namespace EducationPortal.Interfaces
 {
     interface IAuthorizationManager
     {
-        void Enter();
+        UserViewModel Enter();
         bool CreateAccount();
+        UserViewModel GetUser(int id);
     }
 }

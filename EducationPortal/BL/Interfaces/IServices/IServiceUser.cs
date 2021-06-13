@@ -1,13 +1,11 @@
 ﻿using Application.DTO;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Application.Interfaces
 {
-    public interface IServiceUser : IService<UserDTO>
+    public interface IServiceUser : IServiceEntities<UserDTO>
     {
         bool Create(string name, string email, string password, string password2);
         UserDTO Login(string password, string email);
+        public bool ExistNameEmail(string name, string email);
     }
 }
