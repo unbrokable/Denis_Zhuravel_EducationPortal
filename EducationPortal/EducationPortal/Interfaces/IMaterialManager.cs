@@ -2,12 +2,14 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace EducationPortal.Interfaces
 {
     interface IMaterialManager
     {
-        void CreateMaterial(int userId);
-        IEnumerable<MaterialViewModel> ShowAvaibleMaterial(int userId);
+        Task CreateMaterialAsync(int userId);
+        Task<IEnumerable<MaterialViewModel>> ShowAvaibleMaterialAsync(int userId);
+        Task Remove(int idUser);
     }
 }

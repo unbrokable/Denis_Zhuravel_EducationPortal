@@ -5,6 +5,7 @@ using System.Text;
 using Application.DTO;
 using EducationPortal.Interfaces;
 using EducationPortal.Models;
+using System.Threading.Tasks;
 
 namespace EducationPortal.Managers
 {
@@ -19,23 +20,23 @@ namespace EducationPortal.Managers
             this.mapper = mapper;
         }
 
-        public void Create()
+        public async Task CreateAsync()
         {
             Console.WriteLine("Enter name");
             string name = Console.ReadLine();
-            if (serviceSkill.ExistName(name))
+            if (await serviceSkill.ExistNameAsync(name))
             {
                 Console.WriteLine("This name exist");
                 return;
             }
-            serviceSkill.Create(new SkillDTO {  Name = name });
+            await serviceSkill.CreateAsync(new SkillDTO {  Name = name });
             Console.WriteLine("Skill is saved");
         }
 
-        public void Show()
+        public async Task ShowAsync()
         {
             //page change 
-            var skills = mapper.GetMapper().Map<IEnumerable<SkillDTO>, IEnumerable<SkillViewModel>>(serviceSkill.GetAllBy(i => true));
+            var skills = mapper.GetMapper().Map<IEnumerable<SkillDTO>, IEnumerable<SkillViewModel>>( await serviceSkill.GetAsync(100));
             foreach (var skill in skills)
             {
                 Console.WriteLine(skill.ToString());

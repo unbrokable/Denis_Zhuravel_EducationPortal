@@ -10,23 +10,25 @@ using EducationPortal.Interfaces;
 using EducationPortal.Models.MaterialsViewModels;
 using FluentValidation;
 using EducationPortal.Models.Validators;
+using Application.Interfaces.IServices;
+using System.Threading.Tasks;
 
 namespace EducationPortal.Controllers
 {
     class MaterialManager: IMaterialManager
     {
-        private readonly IServiceEntities<MaterialDTO> service;
+        private readonly IServiceMaterial service;
         private readonly IAutoMapperUlConfiguration mapper;
         private readonly ICommand<MaterialViewModel> commandCreateMaterial;
 
-        public MaterialManager(IServiceEntities<MaterialDTO> service, IAutoMapperUlConfiguration mapper, ICommand<MaterialViewModel> command)
+        public MaterialManager(IServiceMaterial service, IAutoMapperUlConfiguration mapper, ICommand<MaterialViewModel> command)
         {
             this.service = service;
             this.mapper = mapper;
             this.commandCreateMaterial = command;
         }
 
-        public void CreateMaterial(int userId)
+        public async Task CreateMaterialAsync(int userId)
         {
             MaterialViewModel material;
 
@@ -42,14 +44,36 @@ namespace EducationPortal.Controllers
             
             if(material != null)
             {
-                service.Create(mapper.GetMapper().Map<MaterialViewModel, MaterialDTO>(material));
+               await service.CreateAsync(mapper.GetMapper().Map<MaterialViewModel, MaterialDTO>(material));
             }
         }
 
-        public IEnumerable<MaterialViewModel> ShowAvaibleMaterial(int id)
+        public async Task Remove(int creatorId)
         {
-            var materials = service.GetAllBy(i => i.CreatorId == id).ToList();
-            var materialsview = mapper.GetMapper().Map<List<MaterialDTO>, List<MaterialViewModel>>(materials);
+            foreach (var item in await ShowAvaibleMaterialAsync(creatorId))
+            {
+                Console.WriteLine(item.ToString());
+            } 
+            Console.WriteLine("Enter id of material");
+            try
+            {
+                await service.Remove(Convert.ToInt32(Console.ReadLine()));
+            }
+            catch (ArgumentException ex) 
+            {
+                Console.WriteLine($"Error {ex.Message}");
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("Invalid data");
+            }
+            
+        }
+
+        public async Task<IEnumerable<MaterialViewModel>> ShowAvaibleMaterialAsync(int creatorId)
+        {
+            var materials = await service.GetMaterialOfCreatorAsync(creatorId);
+            var materialsview = mapper.GetMapper().Map<IEnumerable<MaterialDTO>, IEnumerable<MaterialViewModel>>(materials);
             return materialsview;
         }
     }

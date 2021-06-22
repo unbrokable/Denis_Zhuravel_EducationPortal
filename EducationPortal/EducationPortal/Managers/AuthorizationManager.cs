@@ -6,19 +6,23 @@ using EducationPortal.Interfaces;
 using EducationPortal.Models;
 using EducationPortal.Models.Validators;
 using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace EducationPortal
 {
     class AuthorizationManager: IAuthorizationManager
     {
         private readonly IServiceUser service;
+        private readonly ILogger logger;
 
-        public AuthorizationManager(IServiceUser service)
+        public AuthorizationManager(IServiceUser service, ILogger logger)
         {
             this.service = service;
+            this.logger = logger;
         }
 
-        public UserViewModel Enter()
+        public async Task<UserViewModel> EnterAsync()
         {
             Console.WriteLine("Hi user");
             string answer;
@@ -29,7 +33,7 @@ namespace EducationPortal
                 switch (answer)
                 {
                     case "1":
-                        var user = Login();
+                        var user = await LoginAsync();
                         if(user == null)
                         {
                             Console.WriteLine("Cant find account");
@@ -40,7 +44,7 @@ namespace EducationPortal
                         }                     
                         break;
                     case "2":
-                        CreateAccount();
+                        await CreateAccountAsync();
                         break;
                     case "3":
                         break;
@@ -51,7 +55,7 @@ namespace EducationPortal
             
         }
 
-        public bool CreateAccount()
+        public async Task<bool> CreateAccountAsync()
         {
             Console.WriteLine("_____________________Create Account_____________________");
             Console.WriteLine("Write Name");
@@ -64,6 +68,7 @@ namespace EducationPortal
             string password2 = Console.ReadLine();
 
             var validator = new RegistrationValidator();
+            
             var validateResult = validator.Validate(new RegistrationModel() {
                 Name = name,
                 Password = password,
@@ -73,11 +78,12 @@ namespace EducationPortal
             });
             if (!validateResult.IsValid)
             {
+                logger.LogInformation("Invalid data of registration" + validateResult.ToString(","));
                 Console.WriteLine(validateResult.ToString(","));
                 return false;
             }
 
-            if(service.Create(name, email, password, password2))
+            if(await service.CreateAsync(name, email, password, password2))
             {
                 Console.WriteLine("Created");
                 return true;
@@ -87,7 +93,7 @@ namespace EducationPortal
             
         }
 
-        public UserViewModel Login()
+        public async Task<UserViewModel> LoginAsync()
         {
             Console.WriteLine("_____________________Login_____________________");
             Console.WriteLine("Write Email");
@@ -95,7 +101,7 @@ namespace EducationPortal
             Console.WriteLine("Write Password");
             string password = Console.ReadLine();
 
-            var curUser = service.Login(password, email);
+            var curUser = await service.LoginAsync(password, email);
 
             if ( curUser == null)
             {
@@ -108,9 +114,9 @@ namespace EducationPortal
             return mapper.CreateMapper().Map<UserDTO, UserViewModel>(curUser);
         }
 
-        public UserViewModel GetUser(int id)
+        public async Task<UserViewModel> GetUserAsync(int id)
         {
-            var curUser = service.GetById(id);
+            var curUser = await service.GetByIdAsync(id);
 
             if (curUser == null)
             {

@@ -6,6 +6,11 @@ using Domain;
 using Application.Interfaces.IServices;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using Domain.Specification;
+using Domain.Specifications;
+using Application.Specification;
+using AutoMapper.QueryableExtensions;
+using System.Threading.Tasks;
 
 namespace Application.Services
 {
@@ -22,27 +27,27 @@ namespace Application.Services
             this.mapper = mapper;
         }
 
-        public void Create(UserDTO data)
+        public async Task CreateAsync(UserDTO data)
         {
             data.Password = hasher.Hash(data.Password);
-            bd.Create(mapper.GetMapper().Map<UserDTO, User>(data));
+            await bd.AddAsync(mapper.GetMapper().Map<UserDTO, User>(data));
         }
 
 
-        public UserDTO GetById(int id) 
+        public async Task<UserDTO> GetByIdAsync(int id) 
         {
-            return GetUser(i => i.Id == id); 
+            return mapper.GetMapper().Map<User, UserDTO>( await bd.FindAsync<User>(UserSpecification.FilterById(id))); 
         }
 
-        public bool Create(string name, string email, string password, string password2)
+        public async Task<bool> CreateAsync(string name, string email, string password, string password2)
         {
             try
             {
-                if (ExistNameEmail(name,email))
+                if (await ExistNameEmailAsync(name,email))
                 {
                     throw new Exception();
                 }
-                Create(new UserDTO { Name = name, Email = email, Password = password });
+                await CreateAsync(new UserDTO { Name = name, Email = email, Password = password });
             }
             catch (Exception)
             {
@@ -51,30 +56,23 @@ namespace Application.Services
             return true;
         }
 
-        public UserDTO Login(string password, string email)
+        public async Task<UserDTO> LoginAsync(string password, string email)
         {
             password = hasher.Hash(password);
-            return GetUser(i => i.Password == password && i.Email == email);
+            return mapper.GetMapper().Map < User,UserDTO>(await bd.FindAsync<User>(
+                UserSpecification.Login(email, password), 
+                i => i.Include(i => i.Skills).ThenInclude(i => i.Skill))); 
         }
 
-        public UserDTO GetBy(Predicate<UserDTO> predicate)
+        public async Task<bool> ExistNameEmailAsync(string name, string email)
         {
-            return GetUser(predicate);
+            return await bd.FindAsync<User>(UserSpecification.FilterByName(name).Or(UserSpecification.FilterByEmail(email))) != null; 
         }
 
-        public IEnumerable<UserDTO> GetAllBy(Predicate<UserDTO> predicate)
+        public async Task<IEnumerable<UserDTO>> GetAsync(int amount)
         {
-            return mapper.GetMapper().Map<IEnumerable<User>,IEnumerable<UserDTO>>(bd.GetAllBy<User>(i => predicate(mapper.GetMapper().Map<User, UserDTO>(i))));
-        }
-
-        public bool ExistNameEmail(string name, string email)
-        {
-            return bd.GetBy<User>(i => String.Compare(i.Email, email) == 0 || String.Compare(i.Name, name) == 0) != null; 
-        }
-
-        UserDTO GetUser(Predicate<UserDTO> predicate)
-        {
-            return mapper.GetMapper().Map < User,UserDTO>(bd.GetBy<User>(i => predicate(mapper.GetMapper().Map<User, UserDTO>(i)), i => i.Include(i => i.Skills).ThenInclude(i => i.Skill))); 
+            return (await bd.GetQueryAsync<User>(new Specification<User>(i => true))).Take(amount)
+                .ProjectTo<UserDTO>(mapper.GetMapper().ConfigurationProvider).ToList();
         }
     }
 }

@@ -1,12 +1,19 @@
 ﻿using Application.DTO.MaterialDTOs;
 using Application.Interfaces;
+using Application.Interfaces.IServices;
+using Application.Specification;
+using AutoMapper.QueryableExtensions;
 using Domain;
+using Domain.Entities;
+using Domain.Specification;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+
 namespace Application.Services
 {
-    public class MaterialService : IServiceEntities<MaterialDTO>
+    public class MaterialService : IServiceMaterial
     {
         private readonly IEntitiesRepository repository;
         private readonly IAutoMapperBLConfiguration mapper;
@@ -17,31 +24,53 @@ namespace Application.Services
             this.mapper = mapper;
         }
 
-        public void Create(MaterialDTO data)
+        public async Task CreateAsync(MaterialDTO data)
         {
             var material = mapper.GetMapper().Map<MaterialDTO,Material>(data);
             if(material != null)
-                repository.Create<Material>(material);
+            {   
+               await repository.AddAsync<Material>(material);
+                return;
+            }
+            throw new ArgumentException("Cant create material");
+
         }
 
-        public MaterialDTO GetById(int id)
+        public async Task<IEnumerable<MaterialDTO>> GetAsync(int amount)
         {
-            return mapper.GetMapper().Map<Material, MaterialDTO>(repository.GetBy<Material>(i => i.Id == id));
+            return ( await repository.GetQueryAsync<Material>(new Specification<Material>(i => true)))
+                .Take(amount)
+                .ProjectTo<MaterialDTO>(mapper.GetMapper().ConfigurationProvider)
+                .ToList();
         }
 
-        public MaterialDTO GetBy(Predicate<MaterialDTO> predicate)
+        public async Task<MaterialDTO> GetByIdAsync(int id)
         {
-            return mapper.GetMapper().Map<Material, MaterialDTO>(repository.GetBy<Material>(i => PredicateTranform(i,predicate)));
+            return mapper.GetMapper()
+                .Map<Material, MaterialDTO>(await repository.FindAsync<Material>(MaterialSpecification.FilterById(id)));
         }
 
-        public IEnumerable<MaterialDTO> GetAllBy(Predicate<MaterialDTO> predicate)
+        public async Task<IEnumerable<MaterialDTO>> GetMaterialOfCreatorAsync(int userId)
         {
-            return mapper.GetMapper().Map<IEnumerable<Material>, IEnumerable<MaterialDTO>>(repository.GetAllBy<Material>(i => PredicateTranform(i, predicate)))
+            return mapper.GetMapper().Map<IEnumerable<Material>, IEnumerable<MaterialDTO>>( await repository.GetAsync<Material>(MaterialSpecification.FilterByCreator(userId)))
                .ToList();
         }
-        bool PredicateTranform(Material material, Predicate<MaterialDTO> predicate)
+
+        public async Task Remove( int id)
         {
-            return predicate(mapper.GetMapper().Map<Material, MaterialDTO>(material));
+            IQueryable<object> checkQuery = (await repository.GetQueryAsync<Course>(CourseSpecification.FilterByMaterial(id)))
+                .Select(i => new { Type = "Course" })
+                .Union((await repository.GetQueryAsync<CompositionPassedMaterial>(PassedMaterialSpecification.FilterByMaterialId(id)))
+                .Select(i => new { Type = "User" })
+                )
+                .GroupBy(i => i.Type);
+            if (checkQuery.Any())
+            {
+                throw new ArgumentException("Cant delete this material");
+            }
+
+            await repository.RemoveAsync<Material>(id);
         }
+
     }
 }

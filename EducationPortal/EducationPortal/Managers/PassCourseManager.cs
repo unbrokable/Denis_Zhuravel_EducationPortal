@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace EducationPortal.Managers
 {
@@ -23,14 +24,14 @@ namespace EducationPortal.Managers
             this.courseManager = courseManager;
         }
 
-        public void ChooseCourse(int idUser)
+        public async Task ChooseCourseAsync(int idUser)
         {
-            courseManager.ShowCourses(idUser);
+            await courseManager .ShowCoursesAsync(idUser);
             Console.WriteLine("Choose id course");
             string answer = Console.ReadLine();
             try
             {
-               if(!passingService.ChooseCourse(idUser, int.Parse(answer)))
+               if(!await passingService.ChooseCourseAsync(idUser, int.Parse(answer)))
                 {
                     Console.WriteLine("Cant find course with this id");
                 }
@@ -41,10 +42,10 @@ namespace EducationPortal.Managers
             }
         }
 
-        public void ChooseCourseToPass(int idUser)
+        public async Task ChooseCourseToPassAsync(int idUser)
         {
            var courses = mapper.GetMapper()
-                .Map<IEnumerable<CourseProgressDTO>,IEnumerable<CourseProgressViewModel> >(passingService.GetProgressCourses(idUser));
+                .Map<IEnumerable<CourseProgressDTO>,IEnumerable<CourseProgressViewModel> >(await passingService.GetProgressCoursesAsync(idUser));
             foreach (var course  in courses)
             {
                 if(course.MaterialsNotPassed.Any())
@@ -64,7 +65,7 @@ namespace EducationPortal.Managers
             string answer = Console.ReadLine();
             try
             {
-                PassCourse(idUser, int.Parse(answer));
+               await PassCourseAsync(idUser, int.Parse(answer));
             }
             catch (Exception)
             {
@@ -72,12 +73,12 @@ namespace EducationPortal.Managers
             }
         }
 
-        public void PassCourse(int idUser, int idCourse)
+        public async Task PassCourseAsync(int idUser, int idCourse)
         {
             while (true)
             {
                 var course = mapper.GetMapper()
-                    .Map<CourseProgressDTO, CourseProgressViewModel>(passingService.GetProgressCourse(idUser, idCourse));
+                    .Map<CourseProgressDTO, CourseProgressViewModel>( await passingService.GetProgressCourseAsync(idUser, idCourse));
                 if(course == null)
                 {
                     return;
@@ -87,7 +88,7 @@ namespace EducationPortal.Managers
                 string answer = Console.ReadLine();
                 if (answer.Equals("-1")) return;
                 var material = mapper.GetMapper()
-                    .Map<MaterialDTO, MaterialViewModel>(passingService.PassMaterial(idUser, idCourse, int.Parse(answer)));
+                    .Map<MaterialDTO, MaterialViewModel>(await passingService.PassMaterialAsync(idUser, idCourse, int.Parse(answer)));
 
                 if (material == null) { 
                     Console.WriteLine("Invalid id of material");

@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace EducationPortal.Interfaces
 {
     interface ISkillManager
     {
-        void Create();
-        void Show();
+        Task CreateAsync();
+        Task ShowAsync();
     }
 }

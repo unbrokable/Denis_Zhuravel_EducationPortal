@@ -9,70 +9,84 @@ using System.Linq;
 using Application.Interfaces.IServices;
 using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Domain.Specification;
+using Application.Specification;
+using AutoMapper.QueryableExtensions;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Services
 {
     public class CourseService : IServiceCourse
     {
         private readonly IEntitiesRepository repository;
-        private readonly IServiceEntities<MaterialDTO> serviceMaterial;
         private readonly IAutoMapperBLConfiguration mapper;
-        private readonly IServiceSkill serviceSkill;
+        private readonly ILogger logger;
 
-        public CourseService(IEntitiesRepository repository, IServiceEntities<MaterialDTO> serviceMaterial,
-            IAutoMapperBLConfiguration mapper, IServiceSkill serviceSkill)
+        public CourseService(IEntitiesRepository repository,
+            IAutoMapperBLConfiguration mapper, ILogger logger)
         {
             this.repository = repository;
-            this.serviceMaterial = serviceMaterial;
             this.mapper = mapper;
-            this.serviceSkill = serviceSkill;
+            this.logger = logger;
         }
 
-        public void Create(CourseDTO data)
+        public async Task CreateAsync(CourseDTO data)
         {
+            //change
             var course = mapper.GetMapper().Map<Course>(data);
-            course.Materials = repository.GetAllBy<Material>(i => data.MaterialsId.Contains(i.Id)).ToList();
-            course.Skills = repository.GetAllBy<Skill>(i => data.SkillsId.Contains(i.Id)).ToList();
-            if (!course.Materials.Any() && !course.Skills.Any())
+            course.Materials = (await repository.GetAsync<Material>(new Specification<Material>( i => data.MaterialsId.Contains(i.Id)))).ToList();
+            course.Skills = (await repository.GetAsync<Skill>(new Specification<Skill>(i => data.SkillsId.Contains(i.Id)))).ToList();
+            if (!course.Materials.Any() || !course.Skills.Any())
             {
+                logger.LogWarning($"Course dont enought have skills {course.Skills.Any()} or materials {course.Materials.Any()}");
                 throw new ArgumentException("Too short");
             }
-            repository.Create(course);
+            await repository.AddAsync(course);
         }
 
-        public CourseDTO GetBy(Predicate<CourseDTO> predicate )
+        public async Task<CourseDTO> GetByIdAsync(int id)
         {
-            var course = repository.GetBy<Course>(i => PredicateTranform(i, predicate), i => i.Include(i => i.Materials).Include(i => i.Skills));
-            return mapper.GetMapper()
-                .Map<CourseDTO>(course);
-        }
-
-        public IEnumerable<CourseDTO> GetAllBy(Predicate<CourseDTO> predicate)
-        {
-            return mapper.GetMapper()
-                .Map<IEnumerable<CourseDTO>>(repository.GetAllBy<Course>(i => PredicateTranform(i, predicate), i => i.Include(i => i.Materials).Include(i => i.Skills)));
-        }
-
-        public CourseDTO GetById(int id)
-        {
-            var course = GetBy(i => i.Id == id);
+            var course =  await repository.FindAsync<Course>(CourseSpecification.FilterById(id), i => i.Include(i => i.Materials).Include(i => i.Skills));
             if (course == null)
             {
                 return null;
             }
-            return course;
+            return mapper.GetMapper()
+                .Map<CourseDTO>(course);;
         }
 
-        public IEnumerable<CourseDTO> GetAllExceptChoosen(int userId)
+        public async Task<IEnumerable<CourseDTO>> GetAllExceptChoosenAsync(int userId)
         {
-            return GetAllBy(j => !repository.GetAllBy<CompositionPassedCourse>(i => i.UserId == userId)?
-                .Select(i => i.CourseId)?.Contains(j.Id)??true); 
+            var queryPassed = (await repository.GetQueryAsync<CompositionPassedCourse>(PassedCourseSpecification.FilterByUserId(userId)))
+                .Select(i => i.CourseId);
+           return mapper.GetMapper().Map<IEnumerable<Course>, IEnumerable<CourseDTO>>(await repository.GetAsync<Course>(CourseSpecification.FilterByNotUsed(userId, queryPassed), i => i.Include(i => i.Materials).Include(i => i.Skills))).ToList();
+            
         }
 
-        bool PredicateTranform(Course course, Predicate<CourseDTO> predicate)
+        public async Task<IEnumerable<CourseDTO>> GetCourseOfCreatorAsync(int userId)
         {
-            return predicate(mapper.GetMapper().Map<Course, CourseDTO>(course));
+            return mapper.GetMapper().Map<IEnumerable<Course>,IEnumerable<CourseDTO>>( await repository.GetAsync<Course>(CourseSpecification.FilterByCreatorId(userId), i => i.Include(i => i.Materials).Include(i => i.Skills)))
+                .ToList();
+           
         }
 
+        public async Task<IEnumerable<CourseDTO>> GetAsync(int amount)
+        {
+            var result =(await repository.GetQueryAsync<Course>(new Specification<Course>(i => true), i => i.Include(i => i.Materials).Include(i => i.Skills))).Take(amount).ToList();
+            return mapper.GetMapper().Map<IEnumerable<Course>, IEnumerable<CourseDTO>>(result)
+                .ToList();
+        }
+
+        public async Task Remove(int id)
+        {
+            var checkQuery = (await repository.GetQueryAsync<CompositionPassedCourse>(PassedCourseSpecification.FilterByCourseId(id)));
+            if (checkQuery.Any())
+            {
+                throw new ArgumentException("This course is used and cant be deleted");
+            }
+
+            await repository.RemoveAsync<Course>(id);
+        }
     }
 }

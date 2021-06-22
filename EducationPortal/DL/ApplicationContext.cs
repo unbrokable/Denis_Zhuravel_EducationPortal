@@ -23,23 +23,19 @@ namespace Infrastructure
         public DbSet<CompositionSkillUser> UserSkills { get; set; }
 
 
-        public ApplicationContext()
-        {
-        }
+        //public ApplicationContext()
+        //{
+        //}
 
         public ApplicationContext(DbContextOptions<ApplicationContext> options)
            : base(options)
         {
-        }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            if (!optionsBuilder.IsConfigured)
-            {
-                optionsBuilder.UseSqlServer("data source=localhost;initial catalog=EducationPortalZhuravel;Trusted_Connection=True;multipleactiveresultsets=True;");
-            }
 
         }
+
+        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        //{
+        //}
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

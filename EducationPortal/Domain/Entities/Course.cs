@@ -14,9 +14,6 @@ namespace Domain
         public int? UserId { get; set;}
         public virtual User User { get; set; }
 
-        // public ICollection<CompositionCourseMaterial> Materials { get; set; }
-        // public ICollection<CompositionSkillCourse> Skills { get; set; }
-
          public ICollection<Material> Materials { get; set; }
          public ICollection<Skill> Skills { get; set; }
 

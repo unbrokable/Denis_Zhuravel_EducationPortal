@@ -2,24 +2,28 @@
 using Application.DTO.MaterialDTOs;
 using Application.Interfaces;
 using Application.Interfaces.IServices;
+using Application.Specification;
 using Domain;
 using Domain.Entities;
+using Domain.Specification;
+using Domain.Specifications;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Application.Services
 {
     public class CoursePassingService : ICoursePassingService
     {
         private readonly IEntitiesRepository repository;
-        private readonly IServiceEntities<MaterialDTO> serviceMaterial;
+        private readonly IServiceMaterial serviceMaterial;
         private readonly IServiceCourse serviceCourse;
         private readonly IServiceUser serviceUser;
 
-        public CoursePassingService(IEntitiesRepository repository, IServiceEntities<MaterialDTO> serviceMaterial, IServiceCourse serviceCourse,
+        public CoursePassingService(IEntitiesRepository repository, IServiceMaterial serviceMaterial, IServiceCourse serviceCourse,
            IServiceUser serviceUser)
         {
             this.serviceUser = serviceUser;
@@ -28,39 +32,44 @@ namespace Application.Services
             this.serviceMaterial = serviceMaterial;
         }
 
-        public bool ChooseCourse(int idUser, int idCourse)
+        public async Task<bool> ChooseCourseAsync(int idUser, int idCourse)
         {
-            if (serviceUser.GetById(idUser) == null || serviceCourse.GetById(idCourse) == null)
+            if ( await serviceUser.GetByIdAsync(idUser) == null || await serviceCourse.GetByIdAsync(idCourse) == null)
             {
                 return false;
             }
-            return repository.Create<CompositionPassedCourse>(new CompositionPassedCourse
+            return repository.AddAsync<CompositionPassedCourse>(new CompositionPassedCourse
             {
                 CourseId = idCourse,
                 UserId = idUser
-            });
+            }).Result;
         }
 
-        public IEnumerable<CourseDTO> GetCourses(Predicate<CourseDTO> predicate)
+        public async Task<CourseProgressDTO> GetProgressCourseAsync(int idUser, int idCourse)
         {
-            return serviceCourse.GetAllBy(i => predicate(i));
-        }
+            int checkQuery = (await repository.GetQueryAsync<User>(UserSpecification.FilterById(idUser)))
+                .Select(i => new { Type = "Person" })
+                .Union(
+                    (await repository.GetQueryAsync<Course>(CourseSpecification.FilterById(idCourse)))
+                    .Select(j => new { Type = "Course" }))
+                .Union(
+                    (await repository.GetQueryAsync<CompositionPassedCourse>(PassedCourseSpecification.FilterByUserId(idUser).And(PassedCourseSpecification.FilterByCourseId(idCourse))))
+                    .Select(j => new { Type = "PassedCourse" })
+                    )
+                .GroupBy(i => i.Type).Count();
 
-        public CourseProgressDTO GetProgressCourse(int idUser, int idCourse)
-        {
-            if (serviceUser.GetById(idUser) == null
-                || serviceCourse.GetById(idCourse) == null
-                || repository.GetBy<CompositionPassedCourse>(i => i.CourseId == idCourse && i.UserId == idUser) == null)
+            if (checkQuery != 3)
             {
                 return null;
             }
 
-            var passedMaterialsId = repository
-                .GetAllBy<CompositionPassedMaterial>(i => i.UserId == idUser)
+            var passedMaterialsId = (await repository
+                .GetQueryAsync<CompositionPassedMaterial>(PassedMaterialSpecification.FilterByUserId(idUser)))
                 .Select(i => i.MaterialId)
-                .Aggregate(new List<int>(), (i, j) => i.Union(new List<int>() { j }).ToList());
+                .Distinct()
+                .ToList();
 
-            var course = serviceCourse.GetById(idCourse);
+            var course = await serviceCourse.GetByIdAsync(idCourse);
             CourseProgressDTO courseProgress = new CourseProgressDTO()
             {
                 Id = course.Id,
@@ -73,37 +82,37 @@ namespace Application.Services
             return courseProgress;
         }
 
-        public IEnumerable<CourseProgressDTO> GetProgressCourses(int idUser)
+        public async Task<IEnumerable<CourseProgressDTO>> GetProgressCoursesAsync(int idUser)
         {
-            var coursesId = repository
-                .GetAllBy<CompositionPassedCourse>(i => i.UserId == idUser)
+            var coursesId = (await repository
+                .GetAsync<CompositionPassedCourse>(PassedCourseSpecification.FilterByUserId(idUser)))
                 .Select(i => i.CourseId)
                 .ToList();
             List<CourseProgressDTO> courseProgresses = new List<CourseProgressDTO>();
             for (int i = 0; i < coursesId.Count; i++)
             {
-                courseProgresses.Add(GetProgressCourse(idUser, coursesId[i]));
+                courseProgresses.Add( await GetProgressCourseAsync(idUser, coursesId[i]));
             }
             return courseProgresses;
         }
 
-        public MaterialDTO PassMaterial(int idUser, int idCourse, int idMaterial)
+        public async Task<MaterialDTO> PassMaterialAsync(int idUser, int idCourse, int idMaterial)
         {
-            var compositionPassedMaterial = repository.GetBy<CompositionPassedMaterial>(i => i.UserId == idUser && i.MaterialId == idMaterial);
-            var course = serviceCourse.GetById(idCourse);
-
+            var compositionPassedMaterial =  await repository
+                .FindAsync<CompositionPassedMaterial>(PassedMaterialSpecification.FilterByUserId(idUser) 
+                 .And(PassedMaterialSpecification.FilterByMaterialId(idMaterial) ));
+            var course = await serviceCourse.GetByIdAsync(idCourse);
            
             if (compositionPassedMaterial != null)
             {
-                return serviceMaterial.GetById(idMaterial);
+                return await serviceMaterial.GetByIdAsync(idMaterial);
             }
             else if (course == null || !course.Materials.Select(i => i.Id).Contains(idMaterial))
             {
                 return null;
             }
-
-            // add skills for user
-            var user = repository.GetBy<User>(i => i.Id == idUser,i => i.Include(i=> i.PassedMaterials).Include(i => i.Skills));
+            
+            var user =  repository.FindAsync<User>(UserSpecification.FilterById(idUser),i => i.Include(i=> i.PassedMaterials).Include(i => i.Skills)).Result;
             var passedMaterialOfCourse = user.PassedMaterials
                 .Select(i => i.MaterialId)
                 .Intersect(course.Materials.Select(i => i.Id));
@@ -123,9 +132,9 @@ namespace Application.Services
                 }
 
             }
-            user.PassedMaterials.Add(new CompositionPassedMaterial() { MaterialId = idMaterial, UserId = idUser });
-            repository.Update(user);
-            return serviceMaterial.GetById(idMaterial);
+           user.PassedMaterials.Add(new CompositionPassedMaterial() { MaterialId = idMaterial, UserId = idUser });
+            await repository.UpdateAsync(user);
+            return await serviceMaterial.GetByIdAsync(idMaterial);
         }
 
     }

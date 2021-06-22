@@ -12,7 +12,7 @@ namespace Infrastructure.Configuration
         public void Configure(EntityTypeBuilder<User> builder)
         {
             builder.HasKey(i => i.Id);
-            builder.Property(i => i.Name).IsRequired().HasMaxLength(30);
+            builder.Property(i => i.Name).IsRequired().HasMaxLength(50);
             builder.Property(i => i.Password).IsRequired().HasMaxLength(50);
             builder.Property(i => i.Email).IsRequired().HasMaxLength(40);
            

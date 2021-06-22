@@ -1,11 +1,11 @@
-﻿
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Application.Interfaces;
 using System.Linq;
 using System;
-using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Query;
+using System.Threading.Tasks;
+using Domain.Specification;
 
 namespace Infrastructure.Repositories
 {
@@ -18,12 +18,12 @@ namespace Infrastructure.Repositories
             this.bd = bd;
         }
 
-        public bool Create<T>(T data) where T : class
+        public async Task<bool> AddAsync<T>(T data) where T : class
         {
             try
             {
-                bd.Set<T>().Add(data);
-                bd.SaveChanges();
+                await bd.Set<T>().AddAsync(data);
+                await bd.SaveChangesAsync();
             }
             catch (Exception)
             {
@@ -32,26 +32,58 @@ namespace Infrastructure.Repositories
             return true;
         }
 
-        public T GetBy<T>(Func<T,bool> predicate, Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null) where T : class
+        public Task<T> FindAsync<T>(Specification<T> specification, Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null) where T : class
         {
-
-            Expression<Func<T, bool>> expression = i => predicate(i);
-
-            return Include<T>(include).FirstOrDefault(expression.Compile());
+            return Task.FromResult(Include<T>(include).FirstOrDefault(specification.Expression));
         }
 
-        public IEnumerable<T> GetAllBy<T>(Func<T, bool> predicate, Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null) where T : class
+
+
+        public Task<IEnumerable<T>> GetAsync<T>(Specification<T> specification, Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null) where T : class
         {
-            Expression<Func<T, bool>> expression = i => predicate(i);
-            return Include<T>(include).Where(expression.Compile());
+            return Task.FromResult(Include<T>(include).Where(specification.Expression).AsEnumerable());
         }
 
-        public bool Update<T>(T data) where T : class
+        public  Task<IQueryable<T>> GetQueryAsync<T>(Specification<T> specification, Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null) where T : class
+        {
+            return Task.FromResult(Include<T>(include).Where(specification.Expression));
+        }
+
+        public async Task<bool> RemoveAsync<T>(T data) where T : class
+        {
+            try
+            {
+               await Task.Run(() => bd.Remove(data));
+                await bd.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public async Task<bool> RemoveAsync<T>(int id) where T : class
+        {
+            try
+            {
+                bd.Remove(await bd.Set<T>().FindAsync(id));
+                await bd.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+            return true;
+
+        }
+
+        public async Task<bool> UpdateAsync<T>(T data) where T : class
         {
             try
             {
                 bd.Set<T>().Update(data);
-                bd.SaveChangesAsync();
+                await bd.SaveChangesAsync();
             }
             catch (Exception)
             {
@@ -69,5 +101,6 @@ namespace Infrastructure.Repositories
             }
             return query;
         }
+
     }
 }

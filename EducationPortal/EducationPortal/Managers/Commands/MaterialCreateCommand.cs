@@ -2,21 +2,22 @@
 using EducationPortal.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace EducationPortal.Managers.Commands
 {
     class MaterialCreateCommands : ICommand<MaterialViewModel>
     {
-        private readonly ICommandMaterial[] commands;
+        private readonly List<ICommandMaterial> commands;
 
-        public MaterialCreateCommands(ICommandMaterial[] commands)
+        public MaterialCreateCommands(IEnumerable<ICommandMaterial> commands)
         {
-            this.commands = commands;
+            this.commands = commands.ToList();
         }
         public MaterialViewModel Execute(int idUser)
         {
-            for (int i = 0; i < commands.Length; i++)
+            for (int i = 0; i < commands.Count; i++)
             {
                 Console.WriteLine($"Command {i}  {commands[i].ToString()}");
             }

@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace EducationPortal.Interfaces
 {
     interface IPassCourseManager
     {
-        public void ChooseCourse(int idUser);
-        public void ChooseCourseToPass(int idUser);
-        public void PassCourse(int idUser, int idCourse);
+        Task ChooseCourseAsync(int idUser);
+        Task ChooseCourseToPassAsync(int idUser);
+        Task PassCourseAsync(int idUser, int idCourse);
     }
 }

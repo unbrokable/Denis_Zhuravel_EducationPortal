@@ -1,10 +1,17 @@
 ﻿using Application.DTO;
 using Application.Interfaces;
 using Application.Interfaces.IServices;
+using Application.Specification;
+using AutoMapper.QueryableExtensions;
+using Domain;
 using Domain.Entities;
+using Domain.Specification;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+
 namespace Application.Services
 {
     public class SkillService : IServiceSkill
@@ -18,58 +25,52 @@ namespace Application.Services
             this.repository = repository;
         }
 
-        public void Create(SkillDTO data)
+        public async Task CreateAsync(SkillDTO data)
         {
             var skill = mapper.GetMapper().Map<SkillDTO, Skill>(data);
             if (skill != null)
-                repository.Create<Skill>(skill);
+              await  repository.AddAsync<Skill>(skill);
         }
 
-        public IEnumerable<SkillDTO> GetAllBy(Predicate<SkillDTO> predicate)
+        public async Task<SkillDTO> GetByIdAsync(int id)
         {
-            return mapper.GetMapper()
-                .Map<IEnumerable<Skill>, IEnumerable<SkillDTO>>(repository.GetAllBy<Skill>(i => predicate(mapper.GetMapper().Map<Skill, SkillDTO>(i))));
+            return mapper.GetMapper().Map<Skill, SkillDTO>(await repository.FindAsync<Skill>(SkillSpecification.FilterById(id)));
         }
 
-        public SkillDTO GetBy(Predicate<SkillDTO> predicate)
+        public async Task<bool> ExistAsync(int id)
         {
-            return mapper.GetMapper()
-                .Map<Skill, SkillDTO>(repository.GetBy<Skill>(i => predicate(mapper.GetMapper().Map<Skill,SkillDTO>(i))));
+            return await repository.FindAsync<Skill>(SkillSpecification.FilterById(id)) != null;
         }
 
-        public SkillDTO GetById(int id)
+        public async Task<bool> ExistNameAsync(string name)
         {
-            return mapper.GetMapper().Map<Skill, SkillDTO>(repository.GetBy<Skill>(i => i.Id == id));
+            return await repository.FindAsync<Skill>(SkillSpecification.FilterByName(name)) != null;
         }
 
-        public bool Exist(int id)
-        {
-            return repository.GetBy<Skill>(i => i.Id == id) != null;
-        }
-
-        public bool ExistName(string name)
-        {
-            return repository.GetBy<Skill>(i => String.Compare(i.Name, name) == 0) != null;
-        }
-
-        public IEnumerable<SkillDTO> GetAllSkillsOfCourse(int idCourse)
+        public async Task<IEnumerable<SkillDTO>> GetAllSkillsOfCourseAsync(int idCourse)
         {
            
-            return mapper.GetMapper()
-                .Map<IEnumerable< Skill>, IEnumerable<SkillDTO>>( repository.GetAllBy<Skill>(i => i.Courses.Select(j => j.Id).Contains(idCourse)));
+            return (await repository.GetQueryAsync<Skill>(SkillSpecification.FilterByCourseId(idCourse)))
+                .ProjectTo<SkillDTO>(mapper.GetMapper().ConfigurationProvider);
         }
 
-        public IEnumerable<SkillUserDTO> GetAllSkillsOfUser(int idUser)
+        public async Task<IEnumerable<SkillUserDTO>> GetAllSkillsOfUserAsync(int idUser)
         {
-            var skillsId = repository.GetAllBy<CompositionSkillUser>(i => i.UserId == idUser);
-  
-            var skills = GetAllBy(i => skillsId?.Select(i => i.SkillId).Contains(i.Id) ?? false);
-            return skillsId?.Join(skills, a => a.SkillId, b => b.Id, (a, b) => new SkillUserDTO
+            var user = await repository.FindAsync<User>( UserSpecification.FilterById(idUser), i => i.Include(i => i.Skills).ThenInclude(j => j.Skill));
+            return user.Skills?.Join(user.Skills.Select(i => i.Skill), a => a.SkillId, b => b.Id, (a, b) => new SkillUserDTO
             {
                 Id = b.Id,
                 Name = b.Name,
                 Level = a.Level
             });
         }
+       
+        public async Task<IEnumerable<SkillDTO>> GetAsync(int amount)
+        {
+            return ( await repository.GetQueryAsync<Skill>(new Specification<Skill>(i => true)))
+                 .Take(amount)
+                 .ProjectTo<SkillDTO>(mapper.GetMapper().ConfigurationProvider).ToList();
+        }
+
     }
 }

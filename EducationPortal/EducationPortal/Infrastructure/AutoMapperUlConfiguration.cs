@@ -15,37 +15,9 @@ namespace EducationPortal
         private IMapper mapper = new MapperConfiguration(
             i =>
             {
-                i.CreateMap<MaterialDTO, MaterialViewModel>()
-               .Include<VideoMaterialDTO, VideoMaterialViewModel>()
-               .Include<BookMaterialDTO, BookMaterialViewModel>()
-               .Include<ArticleMaterialDTO, ArticleMaterialViewModel>();
-                i.CreateMap<ResolutionDTO, ResolutionViewModel>();
-
-                i.CreateMap<ResolutionViewModel, ResolutionDTO>();
-                i.CreateMap<MaterialViewModel, MaterialDTO>()
-                 .ForMember(i => i.Creator, i => i.Ignore())
-                .Include<VideoMaterialViewModel, VideoMaterialDTO>()
-                .Include<BookMaterialViewModel, BookMaterialDTO>()
-                .Include<ArticleMaterialViewModel, ArticleMaterialDTO>();
-
-                i.CreateMap<VideoMaterialDTO, VideoMaterialViewModel>();
-                i.CreateMap<BookMaterialDTO, BookMaterialViewModel>();
-                i.CreateMap<ArticleMaterialDTO, ArticleMaterialViewModel>();
-
-                i.CreateMap<VideoMaterialViewModel, VideoMaterialDTO>();
-                i.CreateMap<BookMaterialViewModel, BookMaterialDTO>();
-                i.CreateMap<ArticleMaterialViewModel, ArticleMaterialDTO>();
-
-                i.CreateMap<CourseDTO, CourseViewModel>();
-                i.CreateMap<CourseViewModel, CourseDTO>();
-
-                i.CreateMap<CourseProgressDTO, CourseProgressViewModel>();
-                i.CreateMap<CourseProgressViewModel, CourseProgressDTO>();
-
-                i.CreateMap<SkillDTO, SkillViewModel>();
-                i.CreateMap<SkillViewModel, SkillDTO>();
-                
-
+                i.AddMaps(new[] {
+                    "EducationPortal"
+                });
             }).CreateMapper();
 
 

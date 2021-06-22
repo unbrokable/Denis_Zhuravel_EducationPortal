@@ -10,7 +10,6 @@ namespace Domain.Entities
         public string Name { get; set; }
 
         public virtual ICollection<CompositionSkillUser> Users { get; set; }
-        //public virtual ICollection<CompositionSkillCourse> Courses { get; set; }
         public virtual ICollection<Course> Courses { get; set; }
     }
 }

@@ -9,6 +9,7 @@ using AutoMapper;
 using EducationPortal.Interfaces;
 using EducationPortal.Models.Validators;
 using Application.Interfaces.IServices;
+using System.Threading.Tasks;
 
 namespace EducationPortal.Controllers
 {
@@ -25,7 +26,7 @@ namespace EducationPortal.Controllers
             this.mapper = mapper; 
         }
 
-        public void CreateCourse(int userId)
+        public async Task CreateCourseAsync(int userId)
         {
             Console.WriteLine("___________Creating course_____________");
             Console.WriteLine("name");
@@ -54,7 +55,7 @@ namespace EducationPortal.Controllers
             }
             try
             {
-                service.Create(course);
+               await  service.CreateAsync(course);
             }
             catch (ArgumentException)
             {
@@ -63,43 +64,54 @@ namespace EducationPortal.Controllers
             
         }
 
-        public void ShowCreatedCourseByUser(int userId)
+        public async Task ShowCreatedCourseByUserAsync(int userId)
         {
-            var courses = service.GetAllBy(i => i.UserId == userId);
-            var coursesview = new List<CourseViewModel>();
-            foreach (var course in courses)
-            {
-                coursesview.Add(mapper.GetMapper().Map<CourseDTO, CourseViewModel>(course));
-            }
+            var coursesview = mapper
+                .GetMapper()
+                .Map<IEnumerable<CourseDTO>,IEnumerable<CourseViewModel>>(await service.GetCourseOfCreatorAsync(userId));
             foreach (var item in coursesview)
             {
                 Console.WriteLine(item.ToString());
             }
         }
 
-        public void ShowCourses(int idUser)
+        public async Task ShowCoursesAsync(int idUser)
         {
-            var courses = service.GetAllExceptChoosen(idUser);
-            var coursesview = new List<CourseViewModel>();
-            foreach (var course in courses)
-            {
-                coursesview.Add(mapper.GetMapper().Map<CourseDTO, CourseViewModel>(course));
-            }
+            var coursesview = mapper
+                .GetMapper()
+                .Map<IEnumerable<CourseDTO>, IEnumerable<CourseViewModel>>( await service.GetAllExceptChoosenAsync(idUser));
             foreach (var item in coursesview)
             {
                 Console.WriteLine($"Course id {item.Id} Name {item.Name}\nDescription {item.Description}\n");
             }
         }
 
-        public void ShowSkills()
+        public async Task ShowSkillsAsync()
         {
-            skillManager.Show();
+            await skillManager.ShowAsync();
         }
 
-        public void CreateSkill()
+        public async Task CreateSkillAsync()
         {
-            skillManager.Create();
+            await skillManager.CreateAsync();
         }
 
+        public async Task Remove(int idUser)
+        {
+            await ShowCreatedCourseByUserAsync(idUser);
+            Console.WriteLine("Enter id of Course");
+            try
+            {
+                await service.Remove(Convert.ToInt32(Console.ReadLine()));
+            }
+            catch(ArgumentException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("Invalid data");
+            }
+        }
     }
 }

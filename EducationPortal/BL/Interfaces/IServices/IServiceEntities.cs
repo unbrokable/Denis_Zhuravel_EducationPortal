@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Application.Interfaces
 {
     public interface IServiceEntities<T>
     {
-        void Create(T data);
-        T GetById(int id);
-        T GetBy(Predicate<T> predicate);
-        IEnumerable<T> GetAllBy(Predicate<T> predicate);
+        Task CreateAsync(T data);
+        Task<T> GetByIdAsync(int id);
+        Task<IEnumerable<T>> GetAsync(int amount);
     }
 }
