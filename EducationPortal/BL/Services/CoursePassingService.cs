@@ -130,7 +130,6 @@ namespace Application.Services
                         user.Skills.Add(new CompositionSkillUser() { SkillId = skill.Id, Level = 1 });
                     }
                 }
-
             }
            user.PassedMaterials.Add(new CompositionPassedMaterial() { MaterialId = idMaterial, UserId = idUser });
             await repository.UpdateAsync(user);

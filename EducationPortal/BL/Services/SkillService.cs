@@ -28,8 +28,7 @@ namespace Application.Services
         public async Task CreateAsync(SkillDTO data)
         {
             var skill = mapper.GetMapper().Map<SkillDTO, Skill>(data);
-            if (skill != null)
-              await  repository.AddAsync<Skill>(skill);
+            await  repository.AddAsync<Skill>(skill);
         }
 
         public async Task<SkillDTO> GetByIdAsync(int id)
