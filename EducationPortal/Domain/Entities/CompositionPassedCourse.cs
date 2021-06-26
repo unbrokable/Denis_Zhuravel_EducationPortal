@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Domain.Entities
 {
-    public class CompositionPassedCourse
+    public class CompositionPassedCourse:Entity
     {
         public int UserId { get; set; }
         public virtual User User { get; set; }

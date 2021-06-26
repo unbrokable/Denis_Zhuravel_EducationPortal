@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace Domain
 {
     [Serializable]
-    public class Course
+    public class Course:Entity
     {
         public int Id { get; set; }
         public string Name { get; set; }

@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 namespace Domain
 {
     [Serializable]
-    public abstract class Material
+    public abstract class Material:Entity
     {
         public int Id { get; set; }
         public string Name { get; set; }

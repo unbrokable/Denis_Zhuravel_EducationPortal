@@ -47,7 +47,7 @@ namespace Application.Services
 
         public async Task<CourseDTO> GetByIdAsync(int id)
         {
-            var course =  await repository.FindAsync<Course>(CourseSpecification.FilterById(id), i => i.Include(i => i.Materials).Include(i => i.Skills));
+            var course =  await repository.FindAsync<Course>(CourseSpecification.FilterById(id), i => i.Materials,i => i.Skills);
             if (course == null)
             {
                 return null;
@@ -60,20 +60,20 @@ namespace Application.Services
         {
             var queryPassed = (await repository.GetQueryAsync<CompositionPassedCourse>(PassedCourseSpecification.FilterByUserId(userId)))
                 .Select(i => i.CourseId);
-           return mapper.GetMapper().Map<IEnumerable<Course>, IEnumerable<CourseDTO>>(await repository.GetAsync<Course>(CourseSpecification.FilterByNotUsed(userId, queryPassed), i => i.Include(i => i.Materials).Include(i => i.Skills))).ToList();
+           return mapper.GetMapper().Map<IEnumerable<Course>, IEnumerable<CourseDTO>>(await repository.GetAsync<Course>(CourseSpecification.FilterByNotUsed(userId, queryPassed),i => i.Materials, i => i.Skills)).ToList();
             
         }
 
         public async Task<IEnumerable<CourseDTO>> GetCourseOfCreatorAsync(int userId)
         {
-            return mapper.GetMapper().Map<IEnumerable<Course>,IEnumerable<CourseDTO>>( await repository.GetAsync<Course>(CourseSpecification.FilterByCreatorId(userId), i => i.Include(i => i.Materials).Include(i => i.Skills)))
+            return mapper.GetMapper().Map<IEnumerable<Course>,IEnumerable<CourseDTO>>( await repository.GetAsync<Course>(CourseSpecification.FilterByCreatorId(userId),i => i.Materials, i => i.Skills))
                 .ToList();
            
         }
 
         public async Task<IEnumerable<CourseDTO>> GetAsync(int amount)
         {
-            var result =(await repository.GetQueryAsync<Course>(new Specification<Course>(i => true), i => i.Include(i => i.Materials).Include(i => i.Skills))).Take(amount).ToList();
+            var result =(await repository.GetQueryAsync<Course>(new Specification<Course>(i => true),i => i.Materials, i => i.Skills)).Take(amount).ToList();
             return mapper.GetMapper().Map<IEnumerable<Course>, IEnumerable<CourseDTO>>(result)
                 .ToList();
         }

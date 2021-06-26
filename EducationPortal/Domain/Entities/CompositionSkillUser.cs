@@ -1,9 +1,10 @@
-﻿using System;
+﻿
+using System;
 
 namespace Domain.Entities
 {
     [Serializable]
-    public class CompositionSkillUser
+    public class CompositionSkillUser:Entity
     {
         public int UserId { get; set; }
         public virtual User User { get; set; }

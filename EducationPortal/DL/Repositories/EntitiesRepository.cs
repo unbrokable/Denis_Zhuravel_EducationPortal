@@ -6,6 +6,10 @@ using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Query;
 using System.Threading.Tasks;
 using Domain.Specification;
+using Microsoft.EntityFrameworkCore;
+using Domain;
+using Infrastructure.Extantion;
+using Domain.Entities;
 
 namespace Infrastructure.Repositories
 {
@@ -18,7 +22,7 @@ namespace Infrastructure.Repositories
             this.bd = bd;
         }
 
-        public async Task<bool> AddAsync<T>(T data) where T : class
+        public async Task<bool> AddAsync<T>(T data) where T : Entity
         {
             try
             {
@@ -32,28 +36,27 @@ namespace Infrastructure.Repositories
             return true;
         }
 
-        public Task<T> FindAsync<T>(Specification<T> specification, Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null) where T : class
+        public  Task<T> FindAsync<T>(Specification<T> specification, params Expression<Func<T, object>>[] include) where T : Entity
         {
-            return Task.FromResult(Include<T>(include).FirstOrDefault(specification.Expression));
+            return Task.FromResult( Include<T>(include).FirstOrDefault(specification.Expression));
         }
 
-
-
-        public Task<IEnumerable<T>> GetAsync<T>(Specification<T> specification, Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null) where T : class
+        public Task<IEnumerable<T>> GetAsync<T>(Specification<T> specification, params Expression<Func<T, object>>[] include) where T : Entity
         {
+            
             return Task.FromResult(Include<T>(include).Where(specification.Expression).AsEnumerable());
         }
 
-        public  Task<IQueryable<T>> GetQueryAsync<T>(Specification<T> specification, Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null) where T : class
+        public  Task<IQueryable<T>> GetQueryAsync<T>(Specification<T> specification, params Expression<Func<T, object>>[] include) where T : Entity
         {
             return Task.FromResult(Include<T>(include).Where(specification.Expression));
         }
 
-        public async Task<bool> RemoveAsync<T>(T data) where T : class
+        public async Task<bool> RemoveAsync<T>(T data) where T : Entity
         {
             try
             {
-               await Task.Run(() => bd.Remove(data));
+                bd.Remove(data);
                 await bd.SaveChangesAsync();
             }
             catch (Exception)
@@ -63,7 +66,7 @@ namespace Infrastructure.Repositories
             return true;
         }
 
-        public async Task<bool> RemoveAsync<T>(int id) where T : class
+        public async Task<bool> RemoveAsync<T>(int id) where T : Entity
         {
             try
             {
@@ -78,7 +81,7 @@ namespace Infrastructure.Repositories
 
         }
 
-        public async Task<bool> UpdateAsync<T>(T data) where T : class
+        public async Task<bool> UpdateAsync<T>(T data) where T : Entity
         {
             try
             {
@@ -92,14 +95,37 @@ namespace Infrastructure.Repositories
             return true;
         }
 
-        IQueryable<T> Include<T>(Func<IQueryable<T>, IIncludableQueryable<T, object>> include ) where T : class
+        //IQueryable<T> Include<T>( Func<IQueryable<T>,IIncludableQueryable<T, object>> include ) where T : Entity
+        //{
+        //    IQueryable<T> query = bd.Set<T>().AsQueryable();
+        //    if (include != null)
+        //    {
+        //        query = include(query);
+        //    }
+        //    return query;
+        //}
+
+        //void Foo()
+        //{
+
+        //    // Attribute work 
+        //    //Func<IQueryable<User>, IQueryable<User>> includes = DbContextHelper.GetNavigations<User>();
+        //    //IQueryable<User> query = bd.Set<User>();
+        //    //if (includes != null)
+        //    //{
+        //    //    query = includes(query);
+        //    //}
+        //    //var User = query.FirstOrDefault();
+        //    //User.Skills.Count();
+        //    // EF6?
+        //    var user = bd.Set<User>().IncludeEF6(i => i.Skills.Select(j => j.Skill)).FirstOrDefault();
+        //    user.Skills.Count();
+
+        //}
+
+        IQueryable<T> Include<T>(params Expression<Func<T, object>>[] includes) where T: Entity
         {
-            IQueryable<T> query = bd.Set<T>().AsQueryable();
-            if (include != null)
-            {
-                query = include(query);
-            }
-            return query;
+            return bd.Set<T>().AsQueryable().IncludeEF6(includes);
         }
 
     }

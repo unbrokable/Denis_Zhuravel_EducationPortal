@@ -55,7 +55,7 @@ namespace Application.Services
 
         public async Task<IEnumerable<SkillUserDTO>> GetAllSkillsOfUserAsync(int idUser)
         {
-            var user = await repository.FindAsync<User>( UserSpecification.FilterById(idUser), i => i.Include(i => i.Skills).ThenInclude(j => j.Skill));
+            var user = await repository.FindAsync<User>( UserSpecification.FilterById(idUser), i => i.Skills.Select(s => s.Skill));
             return user.Skills?.Join(user.Skills.Select(i => i.Skill), a => a.SkillId, b => b.Id, (a, b) => new SkillUserDTO
             {
                 Id = b.Id,

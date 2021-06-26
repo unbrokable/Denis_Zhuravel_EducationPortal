@@ -61,7 +61,7 @@ namespace Application.Services
             password = hasher.Hash(password);
             return mapper.GetMapper().Map < User,UserDTO>(await bd.FindAsync<User>(
                 UserSpecification.Login(email, password), 
-                i => i.Include(i => i.Skills).ThenInclude(i => i.Skill))); 
+                i => i.Skills.Select( s => s.Skill))); 
         }
 
         public async Task<bool> ExistNameEmailAsync(string name, string email)

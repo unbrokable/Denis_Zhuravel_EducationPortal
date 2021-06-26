@@ -112,7 +112,7 @@ namespace Application.Services
                 return null;
             }
             
-            var user =  repository.FindAsync<User>(UserSpecification.FilterById(idUser),i => i.Include(i=> i.PassedMaterials).Include(i => i.Skills)).Result;
+            var user =  await repository.FindAsync<User>(UserSpecification.FilterById(idUser),i=> i.PassedMaterials, i => i.Skills);
             var passedMaterialOfCourse = user.PassedMaterials
                 .Select(i => i.MaterialId)
                 .Intersect(course.Materials.Select(i => i.Id));

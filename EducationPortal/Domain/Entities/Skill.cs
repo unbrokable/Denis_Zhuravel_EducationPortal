@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Domain.Entities
 {
     [Serializable]
-    public class Skill
+    public class Skill:Entity
     {
         public int Id { get; set; }
         public string Name { get; set; }
