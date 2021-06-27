@@ -52,7 +52,7 @@ namespace EducationPortal.Controllers
                         break;
                     case "3":
                         Console.WriteLine("Materials\n");
-                        foreach (var item in  materialManager.ShowAvaibleMaterialAsync(curUser.Id).Result)
+                        foreach (var item in  await materialManager.ShowAvaibleMaterialAsync(curUser.Id))
                         {
                             Console.Write(item.ToString());
                         }
@@ -83,7 +83,7 @@ namespace EducationPortal.Controllers
                         await materialManager.Remove(curUser.Id);
                         break;
                     case "9":
-                        Console.WriteLine( authorizationController.GetUserAsync(curUser.Id).Result.ToString());
+                        Console.WriteLine((await authorizationController.GetUserAsync(curUser.Id)).ToString());
                         break;
                     case "10":
                         logout = true;

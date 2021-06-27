@@ -48,9 +48,8 @@ namespace Application.Services
 
         public async Task<IEnumerable<SkillDTO>> GetAllSkillsOfCourseAsync(int idCourse)
         {
-           
-            return (await repository.GetQueryAsync<Skill>(SkillSpecification.FilterByCourseId(idCourse)))
-                .ProjectTo<SkillDTO>(mapper.GetMapper().ConfigurationProvider);
+
+            return (await repository.GetCustomSelectAsync<Skill, SkillDTO>(SkillSpecification.FilterByCourseId(idCourse), mapper.GetMapper().ConfigurationProvider));
         }
 
         public async Task<IEnumerable<SkillUserDTO>> GetAllSkillsOfUserAsync(int idUser)
@@ -64,11 +63,11 @@ namespace Application.Services
             });
         }
        
+        // change on page after mvc 
         public async Task<IEnumerable<SkillDTO>> GetAsync(int amount)
         {
-            return ( await repository.GetQueryAsync<Skill>(new Specification<Skill>(i => true)))
-                 .Take(amount)
-                 .ProjectTo<SkillDTO>(mapper.GetMapper().ConfigurationProvider).ToList();
+            var page = await repository.GetAsync<Skill>(0, amount);
+            return mapper.GetMapper().Map<IEnumerable<SkillDTO>>(page.Items).ToList();
         }
 
     }

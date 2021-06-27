@@ -3,7 +3,7 @@ using System.Linq.Expressions;
 
 namespace Domain.Specification
 {
-    public class Specification<T>
+    public class Specification< T>
         where T : class
     {
         public Expression<Func<T, bool>> Expression { get; }

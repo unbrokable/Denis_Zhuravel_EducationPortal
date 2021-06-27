@@ -69,10 +69,11 @@ namespace Application.Services
             return await bd.FindAsync<User>(UserSpecification.FilterByName(name).Or(UserSpecification.FilterByEmail(email))) != null; 
         }
 
+        // change after mvc
         public async Task<IEnumerable<UserDTO>> GetAsync(int amount)
         {
-            return (await bd.GetQueryAsync<User>(new Specification<User>(i => true))).Take(amount)
-                .ProjectTo<UserDTO>(mapper.GetMapper().ConfigurationProvider).ToList();
+            var res = await bd.GetAsync<User>(0, amount);
+            return mapper.GetMapper().Map<IEnumerable<UserDTO>>(res.Items).ToList();
         }
     }
 }

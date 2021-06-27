@@ -58,10 +58,7 @@ namespace Application.Services
 
         public async Task<IEnumerable<CourseDTO>> GetAllExceptChoosenAsync(int userId)
         {
-            var queryPassed = (await repository.GetQueryAsync<CompositionPassedCourse>(PassedCourseSpecification.FilterByUserId(userId)))
-                .Select(i => i.CourseId);
-           return mapper.GetMapper().Map<IEnumerable<Course>, IEnumerable<CourseDTO>>(await repository.GetAsync<Course>(CourseSpecification.FilterByNotUsed(userId, queryPassed),i => i.Materials, i => i.Skills)).ToList();
-            
+           return mapper.GetMapper().Map<IEnumerable<Course>, IEnumerable<CourseDTO>>(await repository.GetAsync<Course>(CourseSpecification.FilterByNotChoosenByUser(userId),i => i.Materials, i => i.Skills)).ToList(); 
         }
 
         public async Task<IEnumerable<CourseDTO>> GetCourseOfCreatorAsync(int userId)
@@ -71,17 +68,20 @@ namespace Application.Services
            
         }
 
+        //Change after mvc 
         public async Task<IEnumerable<CourseDTO>> GetAsync(int amount)
         {
-            var result =(await repository.GetQueryAsync<Course>(new Specification<Course>(i => true),i => i.Materials, i => i.Skills)).Take(amount).ToList();
-            return mapper.GetMapper().Map<IEnumerable<Course>, IEnumerable<CourseDTO>>(result)
+           
+            var result =(await repository.GetAsync<Course>(0,amount,null, i => i.Materials,i => i.Skills));
+            // change on page after mvc
+            return mapper.GetMapper().Map<IEnumerable<Course>, IEnumerable<CourseDTO>>(result.Items)
                 .ToList();
         }
 
         public async Task Remove(int id)
         {
-            var checkQuery = (await repository.GetQueryAsync<CompositionPassedCourse>(PassedCourseSpecification.FilterByCourseId(id)));
-            if (checkQuery.Any())
+            var checkQuery = (await repository.FindAsync<CompositionPassedCourse>(PassedCourseSpecification.FilterByCourseId(id)));
+            if (checkQuery != null)
             {
                 throw new ArgumentException("This course is used and cant be deleted");
             }

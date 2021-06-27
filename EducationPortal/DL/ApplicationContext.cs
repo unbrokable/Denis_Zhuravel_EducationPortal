@@ -22,20 +22,11 @@ namespace Infrastructure
         public DbSet<CompositionPassedMaterial> PassedMaterials { get; set;}
         public DbSet<CompositionSkillUser> UserSkills { get; set; }
 
-
-        //public ApplicationContext()
-        //{
-        //}
-
         public ApplicationContext(DbContextOptions<ApplicationContext> options)
            : base(options)
         {
 
         }
-
-        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        //{
-        //}
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

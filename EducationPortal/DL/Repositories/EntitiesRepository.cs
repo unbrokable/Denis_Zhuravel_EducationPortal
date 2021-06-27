@@ -10,6 +10,11 @@ using Microsoft.EntityFrameworkCore;
 using Domain;
 using Infrastructure.Extantion;
 using Domain.Entities;
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Domain.Model;
+using Infrastructure.Extensions;
+using System.Linq.Dynamic.Core;
 
 namespace Infrastructure.Repositories
 {
@@ -38,18 +43,28 @@ namespace Infrastructure.Repositories
 
         public  Task<T> FindAsync<T>(Specification<T> specification, params Expression<Func<T, object>>[] include) where T : Entity
         {
-            return Task.FromResult( Include<T>(include).FirstOrDefault(specification.Expression));
+            return Task.FromResult( Include<T>(null,include).FirstOrDefault(specification.Expression));
         }
 
         public Task<IEnumerable<T>> GetAsync<T>(Specification<T> specification, params Expression<Func<T, object>>[] include) where T : Entity
         {
             
-            return Task.FromResult(Include<T>(include).Where(specification.Expression).AsEnumerable());
+            return Task.FromResult(Include<T>(specification,include).AsEnumerable<T>());
+        }
+
+        public async Task<PageList<T>> GetAsync<T>(int pageNumber, int pageSize, Specification<T> specification = null, params Expression<Func<T, object>>[] include) where T : Entity
+        {
+            return await Include<T>(specification, include).ToPageListAsync(pageNumber, pageSize);
+        }
+
+        public Task<IEnumerable<R>> GetCustomSelectAsync<T,R>(Specification<T> specification, IConfigurationProvider configuration, params Expression<Func<T, object>>[] includes) where T : Entity
+        {
+            return Task.FromResult(Include<T>(specification,includes).ProjectTo<R>(configuration).AsEnumerable<R>());
         }
 
         public  Task<IQueryable<T>> GetQueryAsync<T>(Specification<T> specification, params Expression<Func<T, object>>[] include) where T : Entity
         {
-            return Task.FromResult(Include<T>(include).Where(specification.Expression));
+            return Task.FromResult(Include<T>(specification,include));
         }
 
         public async Task<bool> RemoveAsync<T>(T data) where T : Entity
@@ -95,38 +110,13 @@ namespace Infrastructure.Repositories
             return true;
         }
 
-        //IQueryable<T> Include<T>( Func<IQueryable<T>,IIncludableQueryable<T, object>> include ) where T : Entity
-        //{
-        //    IQueryable<T> query = bd.Set<T>().AsQueryable();
-        //    if (include != null)
-        //    {
-        //        query = include(query);
-        //    }
-        //    return query;
-        //}
-
-        //void Foo()
-        //{
-
-        //    // Attribute work 
-        //    //Func<IQueryable<User>, IQueryable<User>> includes = DbContextHelper.GetNavigations<User>();
-        //    //IQueryable<User> query = bd.Set<User>();
-        //    //if (includes != null)
-        //    //{
-        //    //    query = includes(query);
-        //    //}
-        //    //var User = query.FirstOrDefault();
-        //    //User.Skills.Count();
-        //    // EF6?
-        //    var user = bd.Set<User>().IncludeEF6(i => i.Skills.Select(j => j.Skill)).FirstOrDefault();
-        //    user.Skills.Count();
-
-        //}
-
-        IQueryable<T> Include<T>(params Expression<Func<T, object>>[] includes) where T: Entity
+        IQueryable<T> Include<T>(Specification<T> specification , params Expression<Func<T, object>>[] includes) where T: Entity
         {
-            return bd.Set<T>().AsQueryable().IncludeEF6(includes);
+            if (specification == null)
+            {
+                return bd.Set<T>().AsQueryable().IncludeEF6(includes);
+            }
+            return bd.Set<T>().AsQueryable().IncludeEF6(includes).Where(specification.Expression);
         }
-
     }
 }

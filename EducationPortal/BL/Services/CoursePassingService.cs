@@ -22,14 +22,16 @@ namespace Application.Services
         private readonly IServiceMaterial serviceMaterial;
         private readonly IServiceCourse serviceCourse;
         private readonly IServiceUser serviceUser;
+        private readonly IAutoMapperBLConfiguration mapper;
 
         public CoursePassingService(IEntitiesRepository repository, IServiceMaterial serviceMaterial, IServiceCourse serviceCourse,
-           IServiceUser serviceUser)
+           IServiceUser serviceUser,IAutoMapperBLConfiguration mapper)
         {
             this.serviceUser = serviceUser;
             this.serviceCourse = serviceCourse;
             this.repository = repository;
             this.serviceMaterial = serviceMaterial;
+            this.mapper = mapper;
         }
 
         public async Task<bool> ChooseCourseAsync(int idUser, int idCourse)
@@ -38,38 +40,26 @@ namespace Application.Services
             {
                 return false;
             }
-            return repository.AddAsync<CompositionPassedCourse>(new CompositionPassedCourse
+            return  await repository.AddAsync<CompositionPassedCourse>(new CompositionPassedCourse
             {
                 CourseId = idCourse,
                 UserId = idUser
-            }).Result;
+            });
         }
 
         public async Task<CourseProgressDTO> GetProgressCourseAsync(int idUser, int idCourse)
         {
-            int checkQuery = (await repository.GetQueryAsync<User>(UserSpecification.FilterById(idUser)))
-                .Select(i => new { Type = "Person" })
-                .Union(
-                    (await repository.GetQueryAsync<Course>(CourseSpecification.FilterById(idCourse)))
-                    .Select(j => new { Type = "Course" }))
-                .Union(
-                    (await repository.GetQueryAsync<CompositionPassedCourse>(PassedCourseSpecification.FilterByUserId(idUser).And(PassedCourseSpecification.FilterByCourseId(idCourse))))
-                    .Select(j => new { Type = "PassedCourse" })
-                    )
-                .GroupBy(i => i.Type).Count();
 
-            if (checkQuery != 3)
-            {
-                return null;
-            }
-
-            var passedMaterialsId = (await repository
-                .GetQueryAsync<CompositionPassedMaterial>(PassedMaterialSpecification.FilterByUserId(idUser)))
-                .Select(i => i.MaterialId)
+            var passedMaterialsId = (await repository.GetCustomSelectAsync<CompositionPassedMaterial, int>(PassedMaterialSpecification.FilterByUserId(idUser),
+                mapper.GetMapper().ConfigurationProvider))
                 .Distinct()
                 .ToList();
 
-            var course = await serviceCourse.GetByIdAsync(idCourse);
+            var course = (await serviceCourse.GetByIdAsync(idCourse));
+            if(course == null)
+            {
+                return null;
+            }
             CourseProgressDTO courseProgress = new CourseProgressDTO()
             {
                 Id = course.Id,
