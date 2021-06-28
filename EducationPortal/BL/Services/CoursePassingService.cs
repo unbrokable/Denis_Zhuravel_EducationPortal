@@ -36,10 +36,6 @@ namespace Application.Services
 
         public async Task<bool> ChooseCourseAsync(int idUser, int idCourse)
         {
-            if ( await serviceUser.GetByIdAsync(idUser) == null || await serviceCourse.GetByIdAsync(idCourse) == null)
-            {
-                return false;
-            }
             return  await repository.AddAsync<CompositionPassedCourse>(new CompositionPassedCourse
             {
                 CourseId = idCourse,
@@ -49,39 +45,35 @@ namespace Application.Services
 
         public async Task<CourseProgressDTO> GetProgressCourseAsync(int idUser, int idCourse)
         {
-
             var passedMaterialsId = (await repository.GetCustomSelectAsync<CompositionPassedMaterial, int>(PassedMaterialSpecification.FilterByUserId(idUser),
-                mapper.GetMapper().ConfigurationProvider))
-                .Distinct()
-                .ToList();
-
-            var course = (await serviceCourse.GetByIdAsync(idCourse));
-            if(course == null)
+                mapper.GetMapper().ConfigurationProvider));
+            var course = (await repository
+                .FindAsync<Course>(CourseSpecification.FilterById(idCourse).And(CourseSpecification.FilterByNotChoosenByUser(idUser).Not()), i => i.Materials, i => i.Skills));
+            if (course == null)
             {
                 return null;
             }
-            CourseProgressDTO courseProgress = new CourseProgressDTO()
-            {
-                Id = course.Id,
-                Name = course.Name,
-                Description = course.Description,
-                MaterialsPassed = course.Materials.Where(i => passedMaterialsId.Contains(i.Id)).ToList(),
-                MaterialsNotPassed = course.Materials.Where(i => !passedMaterialsId.Contains(i.Id)).ToList(),
-                Skills = course.Skills
-            };
+            var tuple = new Tuple<Course, IEnumerable<int>>(course, passedMaterialsId);
+            CourseProgressDTO courseProgress = mapper
+                 .GetMapper()
+                 .Map<CourseProgressDTO>(tuple);
             return courseProgress;
         }
 
         public async Task<IEnumerable<CourseProgressDTO>> GetProgressCoursesAsync(int idUser)
         {
-            var coursesId = (await repository
-                .GetAsync<CompositionPassedCourse>(PassedCourseSpecification.FilterByUserId(idUser)))
-                .Select(i => i.CourseId)
-                .ToList();
-            List<CourseProgressDTO> courseProgresses = new List<CourseProgressDTO>();
-            for (int i = 0; i < coursesId.Count; i++)
+            var passedMaterialsId = (await repository.GetCustomSelectAsync<CompositionPassedMaterial, int>(PassedMaterialSpecification.FilterByUserId(idUser),
+                mapper.GetMapper().ConfigurationProvider)).ToList();
+            var courses = (await repository
+                .GetAsync<Course>(CourseSpecification.FilterByNotChoosenByUser(idUser).Not(), i => i.Materials, i => i.Skills));    
+            List<CourseProgressDTO> courseProgresses = new List<CourseProgressDTO>().ToList();  
+            foreach (var course in courses)
             {
-                courseProgresses.Add( await GetProgressCourseAsync(idUser, coursesId[i]));
+                var tuple = new Tuple<Course, IEnumerable<int>>(course, passedMaterialsId);
+                var progress = mapper
+                 .GetMapper()
+                 .Map<CourseProgressDTO>(tuple);
+                courseProgresses.Add(progress);
             }
             return courseProgresses;
         }
@@ -121,10 +113,9 @@ namespace Application.Services
                     }
                 }
             }
-           user.PassedMaterials.Add(new CompositionPassedMaterial() { MaterialId = idMaterial, UserId = idUser });
+            user.PassedMaterials.Add(new CompositionPassedMaterial() { MaterialId = idMaterial, UserId = idUser });
             await repository.UpdateAsync(user);
             return await serviceMaterial.GetByIdAsync(idMaterial);
         }
-
     }
 }

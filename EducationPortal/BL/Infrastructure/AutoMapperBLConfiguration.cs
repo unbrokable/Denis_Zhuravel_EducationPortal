@@ -6,6 +6,8 @@ using Application.DTO.MaterialDTOs;
 using Domain.Entities;
 using System;
 using Application.DTO.CheckDTOs;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace Application
 {
