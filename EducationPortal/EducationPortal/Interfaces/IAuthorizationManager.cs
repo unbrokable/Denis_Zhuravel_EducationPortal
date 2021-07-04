@@ -2,12 +2,14 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace EducationPortal.Interfaces
 {
     interface IAuthorizationManager
     {
-        void Enter();
-        bool CreateAccount();
+        Task<UserViewModel> EnterAsync();
+        Task<bool> CreateAccountAsync();
+        Task<UserViewModel> GetUserAsync(int id);
     }
 }

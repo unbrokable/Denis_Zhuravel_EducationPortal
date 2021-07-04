@@ -3,18 +3,22 @@ using Ninject;
 using Application.Interfaces;
 using EducationPortal.Infrastructure;
 using EducationPortal.Interfaces;
+using Ninject.Modules;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
+using Microsoft.Extensions.Logging.Debug;
+using System.Threading.Tasks;
 
 namespace EducationPortal
 {
     class Program
     {
-        static void Main(string[] args)
+        public static async Task Main()
         {
-            ServiceModuleUl ulModule = new ServiceModuleUl(AppDomain.CurrentDomain.BaseDirectory);
-            var kernel = new StandardKernel(ulModule);
-            var UserService = (IServiceUser)kernel.Get(typeof(IServiceUser));
-            IAuthorizationManager authorization = kernel.Get<IAuthorizationManager>();
-            authorization.Enter(); 
+            var container = Startup.ConfigureService();
+            var mainManager = (IManager)container.GetService(typeof(IManager));
+            await mainManager.StartAsync();
+            Console.ReadKey();
         }
         
     }

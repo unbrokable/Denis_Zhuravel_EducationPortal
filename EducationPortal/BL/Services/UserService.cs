@@ -2,46 +2,53 @@
 using System.Collections.Generic;
 using Application.Interfaces;
 using Application.DTO;
-using System.Linq;
 using Domain;
+using Application.Interfaces.IServices;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
+using Domain.Specification;
+using Domain.Specifications;
+using Application.Specification;
+using AutoMapper.QueryableExtensions;
+using System.Threading.Tasks;
 
 namespace Application.Services
 {
     public class UserService : IServiceUser
     {
-        IEntitiesRepository bd;
-        IHasher hasher;
-        IAutoMapperBLConfiguration mapper;
+        private readonly IEntitiesRepository bd;
+        private readonly IHasher hasher;
+        private readonly IAutoMapperBLConfiguration mapper;
 
-        public UserService(IEntitiesRepository bd, IHasher hasher, IAutoMapperBLConfiguration mapper)
+        public UserService(IEntitiesRepository bd, IHasher hasher,IAutoMapperBLConfiguration mapper)
         {
             this.bd = bd;
             this.hasher = hasher;
             this.mapper = mapper;
         }
-        public void Create(UserDTO data)
+
+        public async Task CreateAsync(UserDTO data)
         {
             data.Password = hasher.Hash(data.Password);
-            var user = mapper.CreateMapper().Map<UserDTO, User>(data);
-            bd.Create(user);
+            await bd.AddAsync(mapper.GetMapper().Map<UserDTO, User>(data));
         }
 
-        public IEnumerable<UserDTO> GetAll()
+
+        public async Task<UserDTO> GetByIdAsync(int id) 
         {
-            return mapper.CreateMapper().Map<IEnumerable<User>, List<UserDTO>>(bd.GetAll<User>());
+            User user = await bd.FindAsync<User>(UserSpecification.FilterById(id));
+            return mapper.GetMapper().Map<User, UserDTO>(user); 
         }
 
-        public UserDTO GetById(int id)
-        {
-            var user = bd.GetAll<User>().FirstOrDefault(i => i.Id == id);
-            return mapper.CreateMapper().Map<User,UserDTO >(user);
-        }
-
-        public bool Create(string name, string email, string password, string password2)
+        public async Task<bool> CreateAsync(string name, string email, string password, string password2)
         {
             try
             {
-                Create(new UserDTO { Id = new Random().Next(1, 1000), Name = name, Email = email, Password = password });
+                if (await ExistNameEmailAsync(name,email))
+                {
+                    throw new Exception();
+                }
+                await CreateAsync(new UserDTO { Name = name, Email = email, Password = password });
             }
             catch (Exception)
             {
@@ -49,10 +56,24 @@ namespace Application.Services
             }
             return true;
         }
-        public UserDTO Login(string password, string email)
+
+        public async Task<UserDTO> LoginAsync(string password, string email)
         {
             password = hasher.Hash(password);
-            return GetAll().ToList().FirstOrDefault(i=> String.Equals(password, i.Password)  && String.Equals(email, i.Email));
+            User user = await bd.FindAsync<User>(UserSpecification.Login(email, password),i => i.Skills.Select(s => s.Skill));
+            return mapper.GetMapper().Map <User,UserDTO>(user); 
+        }
+
+        public async Task<bool> ExistNameEmailAsync(string name, string email)
+        {
+            return await bd.FindAsync<User>(UserSpecification.FilterByName(name).Or(UserSpecification.FilterByEmail(email))) != null; 
+        }
+
+        // change after mvc
+        public async Task<IEnumerable<UserDTO>> GetAsync(int amount)
+        {
+            var res = await bd.GetAsync<User>(0, amount);
+            return mapper.GetMapper().Map<IEnumerable<UserDTO>>(res.Items).ToList();
         }
     }
 }

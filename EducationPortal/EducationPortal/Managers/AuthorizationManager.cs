@@ -1,52 +1,61 @@
-﻿using Application.DTO;
+﻿using AutoMapper;
+using Application.DTO;
 using Application.Interfaces;
 using Application.Services;
 using EducationPortal.Interfaces;
 using EducationPortal.Models;
 using EducationPortal.Models.Validators;
 using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
-namespace EducationPortal.Controllers
+namespace EducationPortal
 {
     class AuthorizationManager: IAuthorizationManager
     {
-        IServiceUser service;
-        public AuthorizationManager(IServiceUser service)
+        private readonly IServiceUser service;
+        private readonly ILogger logger;
+
+        public AuthorizationManager(IServiceUser service, ILogger logger)
         {
             this.service = service;
+            this.logger = logger;
         }
-        public void Enter()
+
+        public async Task<UserViewModel> EnterAsync()
         {
             Console.WriteLine("Hi user");
             string answer;
             while (true)
             {
-                Console.WriteLine("Login 1 | Create Account 2 | Exit 3");
+                Console.WriteLine("Login 1\nCreate Account 2\nExit 3");
                 answer = Console.ReadLine();
                 switch (answer)
                 {
                     case "1":
-                        UserDTO user = Login();
-                        if (user == null)
+                        var user = await LoginAsync();
+                        if(user == null)
                         {
-                            Console.WriteLine("Cant find user with this name");
+                            Console.WriteLine("Cant find account");
                         }
                         else
                         {
-                            Console.WriteLine($"Hi {user.Id} {user.Name} \n Your email {user.Email} \n ");
-                        }
+                            return user;
+                        }                     
                         break;
                     case "2":
-                        CreateAccount();
+                        await CreateAccountAsync();
                         break;
                     case "3":
-                        return;
+                        break;
                     default:
                         break;
                 }
             }
+            
         }
-        public bool CreateAccount()
+
+        public async Task<bool> CreateAccountAsync()
         {
             Console.WriteLine("_____________________Create Account_____________________");
             Console.WriteLine("Write Name");
@@ -59,8 +68,8 @@ namespace EducationPortal.Controllers
             string password2 = Console.ReadLine();
 
             var validator = new RegistrationValidator();
-            var validateResult = validator.Validate(new RegistrationModel()
-            {
+            
+            var validateResult = validator.Validate(new RegistrationModel() {
                 Name = name,
                 Password = password,
                 ConfirmPassword = password2,
@@ -69,21 +78,56 @@ namespace EducationPortal.Controllers
             });
             if (!validateResult.IsValid)
             {
+                logger.LogInformation("Invalid data of registration" + validateResult.ToString(","));
                 Console.WriteLine(validateResult.ToString(","));
                 return false;
             }
-            service.Create(name, email, password, password2);
-            Console.WriteLine("Created");
-            return true;
+
+            if(await service.CreateAsync(name, email, password, password2))
+            {
+                Console.WriteLine("Created");
+                return true;
+            }
+            Console.WriteLine("Email or Login Invalid");
+            return false;
+            
         }
-        public UserDTO Login()
+
+        public async Task<UserViewModel> LoginAsync()
         {
             Console.WriteLine("_____________________Login_____________________");
             Console.WriteLine("Write Email");
             string email = Console.ReadLine();
             Console.WriteLine("Write Password");
             string password = Console.ReadLine();
-            return service.Login(password, email);
+
+            var curUser = await service.LoginAsync(password, email);
+
+            if ( curUser == null)
+            {
+                return null;
+            }
+            var mapper = new MapperConfiguration(i => {
+                i.CreateMap<SkillUserDTO, SkillUserViewModel>();
+                i.CreateMap<UserDTO, UserViewModel>();
+            });
+            return mapper.CreateMapper().Map<UserDTO, UserViewModel>(curUser);
+        }
+
+        public async Task<UserViewModel> GetUserAsync(int id)
+        {
+            var curUser = await service.GetByIdAsync(id);
+
+            if (curUser == null)
+            {
+                return null;
+            }
+            var mapper = new MapperConfiguration(i => {
+                i.CreateMap<SkillUserDTO, SkillUserViewModel>();
+                i.CreateMap<UserDTO, UserViewModel>();
+            });
+            return mapper.CreateMapper().Map<UserDTO, UserViewModel>(curUser);
+
         }
     }
 }
