@@ -4,7 +4,6 @@ using System.Text;
 
 namespace Domain
 {
-    [Serializable]
     public class BookMaterial:Material
     {
         public string Author { get; set; }

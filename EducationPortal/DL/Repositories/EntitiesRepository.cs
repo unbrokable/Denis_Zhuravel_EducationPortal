@@ -15,16 +15,19 @@ using AutoMapper.QueryableExtensions;
 using Domain.Model;
 using Infrastructure.Extensions;
 using System.Linq.Dynamic.Core;
+using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Repositories
 {
    public class EntitiesRepository : IEntitiesRepository
     {
         private readonly ApplicationContext bd;
+        private readonly ILogger logger;
 
-        public EntitiesRepository(ApplicationContext bd)
+        public EntitiesRepository(ApplicationContext bd, ILogger logger)
         {
             this.bd = bd;
+            this.logger = logger;
         }
 
         public async Task<bool> AddAsync<T>(T data) where T : Entity
@@ -34,8 +37,9 @@ namespace Infrastructure.Repositories
                 await bd.Set<T>().AddAsync(data);
                 await bd.SaveChangesAsync();
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                logger.LogInformation($"During ADDING {nameof(T)} happen some error {e.Message}");
                 return false;
             }
             return true;
@@ -48,7 +52,6 @@ namespace Infrastructure.Repositories
 
         public Task<IEnumerable<T>> GetAsync<T>(Specification<T> specification, params Expression<Func<T, object>>[] include) where T : Entity
         {
-            
             return Task.FromResult(Include<T>(specification,include).AsEnumerable<T>());
         }
 
@@ -74,8 +77,9 @@ namespace Infrastructure.Repositories
                 bd.Remove(data);
                 await bd.SaveChangesAsync();
             }
-            catch (Exception)
+            catch (Exception e )
             {
+                logger.LogInformation($"During REMOVING {nameof(T)} happen some error {e.Message}");
                 return false;
             }
             return true;
@@ -88,8 +92,9 @@ namespace Infrastructure.Repositories
                 bd.Remove(await bd.Set<T>().FindAsync(id));
                 await bd.SaveChangesAsync();
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                logger.LogInformation($"During REMOVING {nameof(T)} happen some error {e.Message}");
                 return false;
             }
             return true;
@@ -103,8 +108,9 @@ namespace Infrastructure.Repositories
                 bd.Set<T>().Update(data);
                 await bd.SaveChangesAsync();
             }
-            catch (Exception)
-            {
+            catch (Exception e)
+            { 
+                logger.LogInformation($"During UPDATING {nameof(T)} happen some error {e.Message}");
                 return false;
             }
             return true;

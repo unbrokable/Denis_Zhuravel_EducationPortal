@@ -4,7 +4,6 @@ using System.Text;
 
 namespace Domain
 {
-    [Serializable]
     public class VideoMaterial : Material
     {
         public TimeSpan Length { get; set; }

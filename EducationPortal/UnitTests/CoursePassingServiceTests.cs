@@ -19,9 +19,9 @@ namespace UnitTests
     public class CoursePassingServiceTests
     {
         Mock<IEntitiesRepository> repository;
-        Mock<IServiceUser> serviceUser;
         Mock<IServiceCourse> serviceCourse;
         Mock<IServiceMaterial> serviceMaterial;
+        Mock<IAutoMapperBLConfiguration> mapper;
 
         Specification<T> GetTrueSpecification<T>() where T:class => new Specification<T>(i => true);
 
@@ -31,16 +31,15 @@ namespace UnitTests
             repository = new Mock<IEntitiesRepository>();
             serviceCourse = new Mock<IServiceCourse>();
             serviceMaterial = new Mock<IServiceMaterial>();
-            serviceUser = new Mock<IServiceUser>();
+            mapper = new Mock<IAutoMapperBLConfiguration>();
         } 
 
         [TestMethod]
         public void ChooseCourse_InvalidUserId_ReturnFalse()
         {
             serviceCourse.Setup(i => i.GetByIdAsync(It.IsAny<int>())).Returns(Task.FromResult( new CourseDTO()));
-            serviceUser.Setup(i => i.GetByIdAsync(It.IsAny<int>())).Returns(Task.FromResult((UserDTO)null));
             repository.Setup(i => i.AddAsync<CompositionPassedMaterial>(It.IsAny<CompositionPassedMaterial>())).Returns(Task.FromResult(true));
-            ICoursePassingService service = new CoursePassingService(repository.Object,serviceMaterial.Object,serviceCourse.Object,serviceUser.Object);
+            ICoursePassingService service = new CoursePassingService(repository.Object,serviceMaterial.Object,serviceCourse.Object,mapper.Object);
             
             var expected = false;
 
@@ -53,9 +52,8 @@ namespace UnitTests
         public void ChooseCourse_InvalidCourseId_ReturnFalse()
         {
             serviceCourse.Setup(i => i.GetByIdAsync(It.IsAny<int>())).Returns(Task.FromResult( (CourseDTO)null));
-            serviceUser.Setup(i => i.GetByIdAsync(It.IsAny<int>())).Returns(Task.FromResult((new UserDTO())));
             repository.Setup(i => i.AddAsync<CompositionPassedMaterial>(It.IsAny<CompositionPassedMaterial>())).Returns(Task.FromResult(true));
-            ICoursePassingService service = new CoursePassingService(repository.Object, serviceMaterial.Object, serviceCourse.Object, serviceUser.Object);
+            ICoursePassingService service = new CoursePassingService(repository.Object, serviceMaterial.Object, serviceCourse.Object, mapper.Object);
            
             var expected = false;
 
@@ -68,10 +66,9 @@ namespace UnitTests
         public void ChooseCourse_RightCourseIdAndUserId_ReturnTrue()
         {
             serviceCourse.Setup(i => i.GetByIdAsync(It.IsAny<int>())).Returns(Task.FromResult(new CourseDTO()));
-            serviceUser.Setup(i => i.GetByIdAsync(It.IsAny<int>())).Returns(Task.FromResult(new UserDTO() ));
             repository.Setup(i => i.AddAsync<CompositionPassedCourse>(It.IsAny<CompositionPassedCourse>())).Returns(Task.FromResult(true));
 
-            ICoursePassingService service = new CoursePassingService(repository.Object, serviceMaterial.Object, serviceCourse.Object, serviceUser.Object);
+            ICoursePassingService service = new CoursePassingService(repository.Object, serviceMaterial.Object, serviceCourse.Object,  mapper.Object);
 
             var expected = true;
 
@@ -84,11 +81,10 @@ namespace UnitTests
         public void GetProgressCourse_InvalidCourseIdAndUserId_ReturnsNull()
         {
             serviceCourse.Setup(i => i.GetByIdAsync(It.IsAny<int>())).Returns(Task.FromResult((CourseDTO)null));
-            serviceUser.Setup(i => i.GetByIdAsync(It.IsAny<int>())).Returns(Task.FromResult((UserDTO)null));
             repository.Setup(i => i.FindAsync<CompositionPassedMaterial>(GetTrueSpecification<CompositionPassedMaterial>(), null)).Returns(Task.FromResult(new CompositionPassedMaterial { }));
             object expected = null;
 
-            ICoursePassingService service = new CoursePassingService(repository.Object, serviceMaterial.Object, serviceCourse.Object, serviceUser.Object);
+            ICoursePassingService service = new CoursePassingService(repository.Object, serviceMaterial.Object, serviceCourse.Object,  mapper.Object);
 
             var result = service.GetProgressCourseAsync(-1, -1);
 
@@ -99,12 +95,11 @@ namespace UnitTests
         public void GetProgressCourse_RightCourseIdAndUserIdButUserDontTakeCourse_ReturnsNull()
         {
             serviceCourse.Setup(i => i.GetByIdAsync(It.IsAny<int>())).Returns(Task.FromResult(new CourseDTO()));
-            serviceUser.Setup(i => i.GetByIdAsync(It.IsAny<int>())).Returns(Task.FromResult( (new UserDTO())));
             repository.Setup(i => i.FindAsync<CompositionPassedMaterial>(GetTrueSpecification<CompositionPassedMaterial>(), null))
                 .Returns(Task.FromResult((CompositionPassedMaterial)null));
             object expected = null;
 
-            ICoursePassingService service = new CoursePassingService(repository.Object, serviceMaterial.Object, serviceCourse.Object, serviceUser.Object);
+            ICoursePassingService service = new CoursePassingService(repository.Object, serviceMaterial.Object, serviceCourse.Object, mapper.Object);
 
             var result = service.GetProgressCourseAsync(1, 1);
 
@@ -124,7 +119,6 @@ namespace UnitTests
                     new BookMaterialDTO(){Id = 5},
                 }
             }));
-            serviceUser.Setup(i => i.GetByIdAsync(It.IsAny<int>())).Returns(Task.FromResult((new UserDTO())));
             repository.Setup(i => i.FindAsync<CompositionPassedCourse>(GetTrueSpecification<CompositionPassedCourse>(), null))
                 .Returns(Task.FromResult(new CompositionPassedCourse()));
             repository.Setup(i => i.GetAsync<CompositionPassedMaterial>(GetTrueSpecification<CompositionPassedMaterial>(), null))
@@ -146,7 +140,7 @@ namespace UnitTests
 
             };
 
-            ICoursePassingService service = new CoursePassingService(repository.Object, serviceMaterial.Object, serviceCourse.Object, serviceUser.Object);
+            ICoursePassingService service = new CoursePassingService(repository.Object, serviceMaterial.Object, serviceCourse.Object,  mapper.Object);
 
             var result = service.GetProgressCourseAsync(1, 2);
 
@@ -165,7 +159,7 @@ namespace UnitTests
 
             int expected = 0;
 
-            ICoursePassingService service = new CoursePassingService(repository.Object, serviceMaterial.Object, serviceCourse.Object, serviceUser.Object);
+            ICoursePassingService service = new CoursePassingService(repository.Object, serviceMaterial.Object, serviceCourse.Object,  mapper.Object);
 
             var result = service.GetProgressCoursesAsync(1);
 
@@ -186,7 +180,7 @@ namespace UnitTests
 
             VideoMaterialDTO expected = new VideoMaterialDTO { Id = 5 };
 
-            ICoursePassingService service = new CoursePassingService(repository.Object, serviceMaterial.Object, serviceCourse.Object, serviceUser.Object);
+            ICoursePassingService service = new CoursePassingService(repository.Object, serviceMaterial.Object, serviceCourse.Object,  mapper.Object);
 
             var result = service.PassMaterialAsync(It.IsAny<int>(), It.IsAny<int>(), 5);
 
@@ -208,7 +202,7 @@ namespace UnitTests
 
             VideoMaterialDTO expected = new VideoMaterialDTO { Id = 5 };
 
-            ICoursePassingService service = new CoursePassingService(repository.Object, serviceMaterial.Object, serviceCourse.Object, serviceUser.Object);
+            ICoursePassingService service = new CoursePassingService(repository.Object, serviceMaterial.Object, serviceCourse.Object,  mapper.Object);
 
             var result = service.PassMaterialAsync(It.IsAny<int>(), It.IsAny<int>(), 5);
 

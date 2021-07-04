@@ -3,7 +3,6 @@ using System.Collections.Generic;
 
 namespace Domain.Entities
 {
-    [Serializable]
     public class CompositionPassedMaterial:Entity
     {
         public int UserId { get; set; }

@@ -4,14 +4,16 @@ using Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20210704081700_addconstrain")]
+    partial class addconstrain
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -75,8 +77,6 @@ namespace Infrastructure.Migrations
                     b.ToTable("Courses");
 
                     b.HasCheckConstraint("course_description_check", "len([Description]) >=  5");
-
-                    b.HasCheckConstraint("course_name_check", "len([Name]) >= 5");
                 });
 
             modelBuilder.Entity("Domain.Entities.CompositionPassedCourse", b =>
@@ -139,8 +139,8 @@ namespace Infrastructure.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
 
                     b.HasKey("Id");
 
@@ -148,8 +148,6 @@ namespace Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("Skills");
-
-                    b.HasCheckConstraint("skill_name_check", "len([Name]) >= 3");
                 });
 
             modelBuilder.Entity("Domain.Material", b =>
@@ -164,13 +162,13 @@ namespace Infrastructure.Migrations
 
                     b.Property<string>("Location")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
 
                     b.HasKey("Id");
 
@@ -180,10 +178,6 @@ namespace Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("Materials");
-
-                    b.HasCheckConstraint("material_location_check", "[Location] <> '' ");
-
-                    b.HasCheckConstraint("material_name_check", "len([Name]) >= 5");
                 });
 
             modelBuilder.Entity("Domain.User", b =>
@@ -195,28 +189,22 @@ namespace Infrastructure.Migrations
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(15)
-                        .HasColumnType("nvarchar(15)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Password")
                         .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
 
                     b.ToTable("Users");
-
-                    b.HasCheckConstraint("user_email_check", "len([Email]) >=  10");
-
-                    b.HasCheckConstraint("user_name_check", "len([Name]) >= 5");
-
-                    b.HasCheckConstraint("user_password_check", "len([Password]) >= 5");
                 });
 
             modelBuilder.Entity("Domain.ArticleMaterial", b =>
@@ -237,21 +225,17 @@ namespace Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Author")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTime>("DateOfPublished")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Format")
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.ToTable("BookMaterial");
-
-                    b.HasCheckConstraint("bookmaterial_author_check", "[Author] >= 5");
-
-                    b.HasCheckConstraint("bookmaterial_format_check", "[Format] >= 3");
                 });
 
             modelBuilder.Entity("Domain.VideoMaterial", b =>
@@ -268,12 +252,6 @@ namespace Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.ToTable("VideoMaterial");
-
-                    b.HasCheckConstraint("videomaterial_length_check", "[Length] > 0 ");
-
-                    b.HasCheckConstraint("videomaterial_height_check", "[Height] > 0");
-
-                    b.HasCheckConstraint("videomaterial_width_check", "[Width] > 0");
                 });
 
             modelBuilder.Entity("CourseMaterial", b =>

@@ -12,7 +12,7 @@ namespace Infrastructure.Configuration.MaterialsConfiguration
         public void Configure(EntityTypeBuilder<ArticleMaterial> builder)
         {
             builder.ToTable(nameof(ArticleMaterial));
-            //builder.Property(i => i.)
+            builder.Property(i => i.DateOfPublished).IsRequired();
         }
     }
 }

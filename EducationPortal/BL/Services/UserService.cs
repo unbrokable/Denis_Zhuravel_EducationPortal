@@ -36,7 +36,8 @@ namespace Application.Services
 
         public async Task<UserDTO> GetByIdAsync(int id) 
         {
-            return mapper.GetMapper().Map<User, UserDTO>( await bd.FindAsync<User>(UserSpecification.FilterById(id))); 
+            User user = await bd.FindAsync<User>(UserSpecification.FilterById(id));
+            return mapper.GetMapper().Map<User, UserDTO>(user); 
         }
 
         public async Task<bool> CreateAsync(string name, string email, string password, string password2)
@@ -59,9 +60,8 @@ namespace Application.Services
         public async Task<UserDTO> LoginAsync(string password, string email)
         {
             password = hasher.Hash(password);
-            return mapper.GetMapper().Map < User,UserDTO>(await bd.FindAsync<User>(
-                UserSpecification.Login(email, password), 
-                i => i.Skills.Select( s => s.Skill))); 
+            User user = await bd.FindAsync<User>(UserSpecification.Login(email, password),i => i.Skills.Select(s => s.Skill));
+            return mapper.GetMapper().Map <User,UserDTO>(user); 
         }
 
         public async Task<bool> ExistNameEmailAsync(string name, string email)

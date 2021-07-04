@@ -5,13 +5,10 @@ using Application.Interfaces.IServices;
 using Application.Specification;
 using Domain;
 using Domain.Entities;
-using Domain.Specification;
 using Domain.Specifications;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Application.Services
@@ -21,13 +18,11 @@ namespace Application.Services
         private readonly IEntitiesRepository repository;
         private readonly IServiceMaterial serviceMaterial;
         private readonly IServiceCourse serviceCourse;
-        private readonly IServiceUser serviceUser;
+
         private readonly IAutoMapperBLConfiguration mapper;
 
-        public CoursePassingService(IEntitiesRepository repository, IServiceMaterial serviceMaterial, IServiceCourse serviceCourse,
-           IServiceUser serviceUser,IAutoMapperBLConfiguration mapper)
+        public CoursePassingService(IEntitiesRepository repository, IServiceMaterial serviceMaterial, IServiceCourse serviceCourse,IAutoMapperBLConfiguration mapper)
         {
-            this.serviceUser = serviceUser;
             this.serviceCourse = serviceCourse;
             this.repository = repository;
             this.serviceMaterial = serviceMaterial;

@@ -4,7 +4,6 @@ using System.Collections.Generic;
 
 namespace Domain
 {
-   [Serializable]
    public class User:Entity
     {
         public int Id { get; set; }
@@ -17,6 +16,5 @@ namespace Domain
         public ICollection<CompositionSkillUser> Skills { get; set; }
         public ICollection<Material> Materials { get; set; }
         public ICollection<CompositionPassedCourse> PassedCourses { get; set; }
-        //public ICollection<int> CreatedCoursesId { get; set; }
     }
 }

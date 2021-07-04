@@ -11,16 +11,18 @@ namespace Infrastructure.Configuration
     {
         public void Configure(EntityTypeBuilder<Material> builder)
         {
+            builder.HasCheckConstraint("material_location_check", "[Location] <> '' ");
+            builder.HasCheckConstraint("material_name_check", "len([Name]) >= 5");
+
             builder
                 .HasOne(i => i.User)
                 .WithMany(i => i.Materials)
                 .HasForeignKey(i => i.CreatorId)
                 .OnDelete(DeleteBehavior.SetNull);
-            //builder.Property(i => i.CreatorId).;
             builder.HasIndex(i => i.Name).IsUnique();
             builder.HasKey(i => i.Id);
-            builder.Property(i => i.Name).HasMaxLength(30).IsRequired();
-            builder.Property(i => i.Location).HasMaxLength(40).IsRequired();
+            builder.Property(i => i.Name).HasMaxLength(20).IsRequired();
+            builder.Property(i => i.Location).HasMaxLength(50).IsRequired();
             
         }
     }

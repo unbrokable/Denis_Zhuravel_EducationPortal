@@ -11,6 +11,10 @@ namespace Infrastructure.Configuration.MaterialsConfiguration
     {
         public void Configure(EntityTypeBuilder<VideoMaterial> builder)
         {
+            builder.HasCheckConstraint("videomaterial_length_check", "[Length] > 0 ");
+            builder.HasCheckConstraint("videomaterial_height_check", "[Height] > 0");
+            builder.HasCheckConstraint("videomaterial_width_check", "[Width] > 0");
+
             builder.ToTable(nameof(VideoMaterial));
             builder.Property(i => i.Length).HasColumnType("bigint");
         }

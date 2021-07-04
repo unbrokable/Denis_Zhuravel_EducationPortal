@@ -11,8 +11,12 @@ namespace EducationPortal.Models.Validators
     {
         public MaterialValidator()
         {
-            RuleFor(i => i.Location).NotEmpty().WithMessage("Invalid location");
-            RuleFor(i => i.Name).MinimumLength(5).WithMessage( "Name is too short");
+            RuleFor(i => i.Location).NotEmpty().WithMessage("Invalid location")
+                    .MaximumLength(50).WithMessage("Location is too long")
+                    .NotNull();
+            RuleFor(i => i.Name).MinimumLength(5).WithMessage("Name is too short")
+                    .MaximumLength(20).WithMessage("Name is too long")
+                    .NotNull();
         }
     }
 
@@ -41,8 +45,8 @@ namespace EducationPortal.Models.Validators
         {
             Include(new MaterialValidator());
             RuleFor(i => i.DateOfPublished).NotNull().WithMessage("Invalid date");
-            RuleFor(i => i.Author).MinimumLength(5).WithMessage("Invalid Author");
-            RuleFor(i => i.Format).MinimumLength(3).WithMessage("Invalid Format");
+            RuleFor(i => i.Author).MinimumLength(5).MaximumLength(20).WithMessage("Invalid Author");
+            RuleFor(i => i.Format).MinimumLength(3).MaximumLength(10).WithMessage("Invalid Format");
         }
     }
 }

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 
 namespace Domain.Entities
 {
-    [Serializable]
     public class Skill:Entity
     {
         public int Id { get; set; }

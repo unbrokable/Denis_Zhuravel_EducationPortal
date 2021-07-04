@@ -6,7 +6,6 @@ using System.Text.Json.Serialization;
 
 namespace Domain
 {
-    [Serializable]
     public abstract class Material:Entity
     {
         public int Id { get; set; }
@@ -17,7 +16,6 @@ namespace Domain
         public virtual User User { get; set; }
 
         public virtual ICollection<CompositionPassedMaterial> Users { get; set; }
-        //public virtual ICollection<CompositionCourseMaterial> Courses {get; set;}
         public virtual ICollection<Course> Courses { get; set; }
     }
 }

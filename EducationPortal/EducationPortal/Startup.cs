@@ -94,7 +94,7 @@ namespace EducationPortal
             {
                 var optionsBuilder = new DbContextOptionsBuilder<ApplicationContext>();
                 var path = String.Concat(Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName, @"\appsettings.json");
-                //Dont work during migration and  i cant fix it
+                //Dont work during migration and I cant fix it
                 //string connection  = (new ConfigurationBuilder()
                 //    .AddJsonFile(path, true, true)
                 //    .Build())

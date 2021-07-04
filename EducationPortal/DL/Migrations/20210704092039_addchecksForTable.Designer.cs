@@ -4,14 +4,16 @@ using Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20210704092039_addchecksForTable")]
+    partial class addchecksForTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -249,9 +251,9 @@ namespace Infrastructure.Migrations
 
                     b.ToTable("BookMaterial");
 
-                    b.HasCheckConstraint("bookmaterial_author_check", "[Author] >= 5");
+                    b.HasCheckConstraint("bookmaterial_author_check", "LEN([Author]) >= 5");
 
-                    b.HasCheckConstraint("bookmaterial_format_check", "[Format] >= 3");
+                    b.HasCheckConstraint("bookmaterial_format_check", "LEN([Format]) >= 3");
                 });
 
             modelBuilder.Entity("Domain.VideoMaterial", b =>

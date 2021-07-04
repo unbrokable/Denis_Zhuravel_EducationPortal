@@ -33,7 +33,6 @@ namespace Application.Services
 
         public async Task CreateAsync(CourseDTO data)
         {
-            //change
             var course = mapper.GetMapper().Map<Course>(data);
             course.Materials = (await repository.GetAsync<Material>(new Specification<Material>( i => data.MaterialsId.Contains(i.Id)))).ToList();
             course.Skills = (await repository.GetAsync<Skill>(new Specification<Skill>(i => data.SkillsId.Contains(i.Id)))).ToList();
@@ -58,24 +57,22 @@ namespace Application.Services
 
         public async Task<IEnumerable<CourseDTO>> GetAllExceptChoosenAsync(int userId)
         {
-           return mapper.GetMapper().Map<IEnumerable<Course>, IEnumerable<CourseDTO>>(await repository.GetAsync<Course>(CourseSpecification.FilterByNotChoosenByUser(userId),i => i.Materials, i => i.Skills)).ToList(); 
+           var courses = await repository.GetAsync<Course>(CourseSpecification.FilterByNotChoosenByUser(userId), i => i.Materials, i => i.Skills);
+           return mapper.GetMapper().Map<IEnumerable<CourseDTO>>(courses).ToList(); 
         }
 
         public async Task<IEnumerable<CourseDTO>> GetCourseOfCreatorAsync(int userId)
         {
-            return mapper.GetMapper().Map<IEnumerable<Course>,IEnumerable<CourseDTO>>( await repository.GetAsync<Course>(CourseSpecification.FilterByCreatorId(userId),i => i.Materials, i => i.Skills))
-                .ToList();
-           
+            var courses = await repository.GetAsync<Course>(CourseSpecification.FilterByCreatorId(userId), i => i.Materials, i => i.Skills);
+            return mapper.GetMapper().Map<IEnumerable<CourseDTO>>(courses).ToList();
         }
 
         //Change after mvc 
         public async Task<IEnumerable<CourseDTO>> GetAsync(int amount)
         {
-           
             var result =(await repository.GetAsync<Course>(0,amount,null, i => i.Materials,i => i.Skills));
             // change on page after mvc
-            return mapper.GetMapper().Map<IEnumerable<Course>, IEnumerable<CourseDTO>>(result.Items)
-                .ToList();
+            return mapper.GetMapper().Map<IEnumerable<CourseDTO>>(result.Items).ToList();
         }
 
         public async Task Remove(int id)
@@ -85,7 +82,6 @@ namespace Application.Services
             {
                 throw new ArgumentException("This course is used and cant be deleted");
             }
-
             await repository.RemoveAsync<Course>(id);
         }
     }

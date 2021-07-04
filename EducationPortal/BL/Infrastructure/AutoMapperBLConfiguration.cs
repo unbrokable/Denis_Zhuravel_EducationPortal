@@ -39,6 +39,7 @@ namespace Application
                i.CreateMap<CompositionPassedCourse, int>()
                .ConvertUsing(i => i.CourseId);
 
+               
            }).CreateMapper();
 
 

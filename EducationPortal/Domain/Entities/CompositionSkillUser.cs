@@ -3,7 +3,6 @@ using System;
 
 namespace Domain.Entities
 {
-    [Serializable]
     public class CompositionSkillUser:Entity
     {
         public int UserId { get; set; }

@@ -53,8 +53,8 @@ namespace Application.Services
 
         public async Task<IEnumerable<MaterialDTO>> GetMaterialOfCreatorAsync(int userId)
         {
-            return mapper.GetMapper().Map<IEnumerable<Material>, IEnumerable<MaterialDTO>>( await repository.GetAsync<Material>(MaterialSpecification.FilterByCreator(userId)))
-               .ToList();
+            var materials = await repository.GetAsync<Material>(MaterialSpecification.FilterByCreator(userId));
+            return mapper.GetMapper().Map<IEnumerable<Material>, IEnumerable<MaterialDTO>>(materials).ToList();
         }
 
         public async Task Remove( int id)
